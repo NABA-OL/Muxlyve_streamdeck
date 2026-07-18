@@ -11,6 +11,9 @@
     "CodePath": "bin/plugin.js",
     "PropertyInspectorPath": "ui/property-inspector.html",
     "SDKVersion": 2,
+    "Nodejs": {
+        "Version": "20"
+    },
     "Software": {
         "MinimumVersion": "7.1"
     },
