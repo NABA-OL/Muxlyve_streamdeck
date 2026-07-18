@@ -21,17 +21,17 @@ abstract class BaseToggleDestinationAction extends SingletonAction {
   }
 
   onWillAppear(ev: any): void | Promise<void> {
-    this.context = ev.context ?? ev.action?.context;
+    this.context = ev.action.id;
     this.applySettings(ev.payload.settings ?? {});
   }
 
   onDidReceiveSettings(ev: any): void | Promise<void> {
-    this.context = ev.context ?? ev.action?.context;
+    this.context = ev.action.id;
     this.applySettings(ev.payload.settings ?? {});
   }
 
   onKeyDown(ev: any): void | Promise<void> {
-    this.context = ev.context ?? ev.action?.context;
+    this.context = ev.action.id;
     const settings = ev.payload.settings ?? {};
     const platform = this.normalizePlatform(settings.platform) ?? this.defaultPlatform;
     void this.togglePlatform(platform);

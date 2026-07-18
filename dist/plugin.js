@@ -6958,15 +6958,15 @@ class BaseToggleDestinationAction extends SingletonAction {
         }, 2500);
     }
     onWillAppear(ev) {
-        this.context = ev.context ?? ev.action?.context;
+        this.context = ev.action.id;
         this.applySettings(ev.payload.settings ?? {});
     }
     onDidReceiveSettings(ev) {
-        this.context = ev.context ?? ev.action?.context;
+        this.context = ev.action.id;
         this.applySettings(ev.payload.settings ?? {});
     }
     onKeyDown(ev) {
-        this.context = ev.context ?? ev.action?.context;
+        this.context = ev.action.id;
         const settings = ev.payload.settings ?? {};
         const platform = this.normalizePlatform(settings.platform) ?? this.defaultPlatform;
         void this.togglePlatform(platform);
