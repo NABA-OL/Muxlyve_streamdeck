@@ -1,0 +1,26 @@
+{
+  "name": "muxlyve-streamdeck",
+  "version": "1.0.0",
+  "description": "Controla tus retransmisiones de Muxlyve desde el Stream Deck: enciende o apaga Twitch, YouTube, Kick y TikTok con un botón.",
+  "author": "BlacKraken Solutions",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "validate": "streamdeck validate",
+    "pack": "streamdeck package",
+    "make-icons": "node scripts/make-icons.mjs"
+  },
+  "devDependencies": {
+    "@elgato/streamdeck": "^2.1.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20.19.43",
+    "rollup": "^4.18.0",
+    "sharp": "^0.33.4",
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Ajustes de destino Muxlyve</title>
+    <style>
+      body {
+        font-family: -apple-system, system-ui, sans-serif;
+        background: #0d1117;
+        color: #e6edf3;
+        margin: 0;
+        padding: 16px;
+        font-size: 13px;
+      }
+      label { display: block; margin-bottom: 4px; color: #8b949e; }
+      select, input {
+        width: 100%; box-sizing: border-box; background: #161b22;
+        border: 1px solid #2a3140; color: #e6edf3;
+        border-radius: 6px; padding: 8px; margin-bottom: 16px;
+      }
+      h3 { color: #7c5cff; margin-top: 0; }
+    </style>
+  </head>
+  <body>
+    <h3>Muxlyve</h3>
+    <label for="platform">Plataforma</label>
+    <select id="platform">
+      <option value="twitch">Twitch</option>
+      <option value="youtube">YouTube</option>
+      <option value="kick">Kick</option>
+      <option value="tiktok">TikTok</option>
+    </select>
+
+    <label for="port">Puerto del panel</label>
+    <input id="port" type="number" value="19080" min="1" max="65535" />
+
+    <script src="toggle-inspector.js"></script>
+  </body>
+</html>

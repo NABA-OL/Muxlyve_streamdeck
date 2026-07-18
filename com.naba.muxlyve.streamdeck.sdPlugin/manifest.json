@@ -1,0 +1,103 @@
+{
+  "Name": "Muxlyve",
+  "Author": "BlacKraken Solutions",
+  "URL": "https://blackraken.vercel.app",
+  "Version": "1.0.0.0",
+  "Description": "Controla tus retransmisiones de Muxlyve desde el Stream Deck: enciende o apaga Twitch, YouTube, Kick y TikTok con un botón.",
+  "Category": "Muxlyve",
+  "UUID": "com.naba.muxlyve.streamdeck",
+  "CodePath": "bin/plugin.js",
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "6.4"
+  },
+  "Icon": "imgs/plugin/icon-256",
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.15"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Actions": [
+    {
+      "UUID": "com.naba.muxlyve.streamdeck.toggle.twitch",
+      "Name": "Twitch",
+      "Icon": "imgs/actions/twitch/on",
+      "Controllers": [
+        "Keypad"
+      ],
+      "PropertyInspectorPath": "ui/toggle.html",
+      "SupportedInMultiActions": true,
+      "VisibleInActionsList": true,
+      "States": [
+        {
+          "Image": "imgs/actions/twitch/on",
+          "Title": "Twitch",
+          "TitleAlignment": "bottom",
+          "FontSize": 12
+        }
+      ]
+    },
+    {
+      "UUID": "com.naba.muxlyve.streamdeck.toggle.youtube",
+      "Name": "YouTube",
+      "Icon": "imgs/actions/youtube/on",
+      "Controllers": [
+        "Keypad"
+      ],
+      "PropertyInspectorPath": "ui/toggle.html",
+      "SupportedInMultiActions": true,
+      "VisibleInActionsList": true,
+      "States": [
+        {
+          "Image": "imgs/actions/youtube/on",
+          "Title": "YouTube",
+          "TitleAlignment": "bottom",
+          "FontSize": 12
+        }
+      ]
+    },
+    {
+      "UUID": "com.naba.muxlyve.streamdeck.toggle.kick",
+      "Name": "Kick",
+      "Icon": "imgs/actions/kick/on",
+      "Controllers": [
+        "Keypad"
+      ],
+      "PropertyInspectorPath": "ui/toggle.html",
+      "SupportedInMultiActions": true,
+      "VisibleInActionsList": true,
+      "States": [
+        {
+          "Image": "imgs/actions/kick/on",
+          "Title": "Kick",
+          "TitleAlignment": "bottom",
+          "FontSize": 12
+        }
+      ]
+    },
+    {
+      "UUID": "com.naba.muxlyve.streamdeck.toggle.tiktok",
+      "Name": "TikTok",
+      "Icon": "imgs/actions/tiktok/on",
+      "Controllers": [
+        "Keypad"
+      ],
+      "PropertyInspectorPath": "ui/toggle.html",
+      "SupportedInMultiActions": true,
+      "VisibleInActionsList": true,
+      "States": [
+        {
+          "Image": "imgs/actions/tiktok/on",
+          "Title": "TikTok",
+          "TitleAlignment": "bottom",
+          "FontSize": 12
+        }
+      ]
+    }
+  ]
+}
