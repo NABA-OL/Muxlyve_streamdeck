@@ -1,0 +1,6 @@
+{
+  "name": "muxlyve-streamdeck",
+  "version": "1.0.0.0",
+  "main": "bin/plugin.js",
+  "private": true
+}
