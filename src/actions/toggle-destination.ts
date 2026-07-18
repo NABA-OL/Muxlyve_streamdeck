@@ -45,9 +45,8 @@ abstract class BaseToggleDestinationAction extends SingletonAction {
     const platform = this.normalizePlatform(settings.platform) ?? this.defaultPlatform;
     const port = Number.parseInt(settings.panelPort ?? "19080", 10) || 19080;
     this.client = new MuxlyveClient(port);
-    void this.refreshState(false);
+    void this.refreshState(true);
     void this.setTitle(platform);
-    void this.setImageForPlatform(platform, "default");
   }
 
   private async togglePlatform(platform: string): Promise<void> {
