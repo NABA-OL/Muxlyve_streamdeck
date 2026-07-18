@@ -28,3 +28,9 @@ npx @elgato/cli restart com.blackraken.muxlyve.streamdeck
 ```bash
 npm run validate
 ```
+## Empaquetado para distribución
+
+```bash
+npm run build
+streamdeck pack
+```
