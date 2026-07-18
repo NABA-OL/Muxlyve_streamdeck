@@ -1,0 +1,77 @@
+{
+    "Name": "Muxlyve",
+    "UUID": "com.blackraken.muxlyve.streamdeck",
+    "Version": "1.0.0.0",
+    "Author": "BlacKraken Solutions",
+    "URL": "https://blackraken.vercel.app",
+    "Description": "Controla tus retransmisiones de Muxlyve desde el Stream Deck: enciende o apaga Twitch, YouTube, Kick y TikTok con un botón.",
+    "Category": "Muxlyve",
+    "CategoryIcon": "imgs/plugin/categoryIcon",
+    "Icon": "imgs/plugin/icon",
+    "CodePath": "bin/plugin.js",
+    "PropertyInspectorPath": "ui/property-inspector.html",
+    "SDKVersion": 2,
+    "Software": {
+        "MinimumVersion": "7.1"
+    },
+    "OS": [
+        {
+            "Platform": "mac",
+            "MinimumVersion": "10.15"
+        },
+        {
+            "Platform": "windows",
+            "MinimumVersion": "10"
+        }
+    ],
+    "Actions": [
+        {
+            "Name": "Twitch",
+            "UUID": "com.blackraken.muxlyve.streamdeck.toggle.twitch",
+            "Icon": "imgs/actions/twitch/on",
+            "Tooltip": "Toggle Twitch",
+            "PropertyInspectorPath": "ui/property-inspector.html",
+            "States": [
+                {
+                    "Image": "imgs/actions/twitch/on"
+                }
+            ]
+        },
+        {
+            "Name": "YouTube",
+            "UUID": "com.blackraken.muxlyve.streamdeck.toggle.youtube",
+            "Icon": "imgs/actions/youtube/on",
+            "Tooltip": "Toggle YouTube",
+            "PropertyInspectorPath": "ui/property-inspector.html",
+            "States": [
+                {
+                    "Image": "imgs/actions/youtube/on"
+                }
+            ]
+        },
+        {
+            "Name": "Kick",
+            "UUID": "com.blackraken.muxlyve.streamdeck.toggle.kick",
+            "Icon": "imgs/actions/kick/on",
+            "Tooltip": "Toggle Kick",
+            "PropertyInspectorPath": "ui/property-inspector.html",
+            "States": [
+                {
+                    "Image": "imgs/actions/kick/on"
+                }
+            ]
+        },
+        {
+            "Name": "TikTok",
+            "UUID": "com.blackraken.muxlyve.streamdeck.toggle.tiktok",
+            "Icon": "imgs/actions/tiktok/on",
+            "Tooltip": "Toggle TikTok",
+            "PropertyInspectorPath": "ui/property-inspector.html",
+            "States": [
+                {
+                    "Image": "imgs/actions/tiktok/on"
+                }
+            ]
+        }
+    ]
+}

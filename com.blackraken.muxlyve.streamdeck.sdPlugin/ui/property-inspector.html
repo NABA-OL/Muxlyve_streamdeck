@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Muxlyve Property Inspector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #e6edf3;
+            background: #0d1117;
+            padding: 12px;
+        }
+
+        label {
+            display: block;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        select,
+        input {
+            width: 100%;
+            margin-top: 4px;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #2a3140;
+            background: #161b22;
+            color: #e6edf3;
+        }
+
+        .hint {
+            font-size: 11px;
+            color: #8b949e;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <label for="platform">Plataforma</label>
+    <select id="platform">
+        <option value="twitch">Twitch</option>
+        <option value="youtube">YouTube</option>
+        <option value="kick">Kick</option>
+        <option value="tiktok">TikTok</option>
+    </select>
+
+    <label for="panelPort">Puerto del panel</label>
+    <input id="panelPort" type="number" value="19080" min="1" max="65535" />
+    <div class="hint">El plugin usa este puerto para contactar la API local de Muxlyve.</div>
+
+    <script>
+        const { setSettings, getSettings } = window.connectElgatoStreamDeckSocket || {};
+        const platform = document.getElementById('platform');
+        const panelPort = document.getElementById('panelPort');
+
+        function save() {
+            const settings = {
+                platform: platform.value,
+                panelPort: panelPort.value,
+            };
+            if (typeof setSettings === 'function') {
+                setSettings(settings);
+            }
+        }
+
+        platform.addEventListener('change', save);
+        panelPort.addEventListener('input', save);
+
+        if (typeof getSettings === 'function') {
+            getSettings((settings) => {
+                if (settings?.platform) platform.value = settings.platform;
+                if (settings?.panelPort) panelPort.value = settings.panelPort;
+            });
+        }
+    </script>
+</body>
+
+</html>

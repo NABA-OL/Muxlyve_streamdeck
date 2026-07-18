@@ -101,7 +101,7 @@ falla (app cerrada), pintar todos los botones en estado "sin conexión".
 - Estructura generada: `*.sdPlugin/` (manifest.json, imgs, bin compilado, ui para
   property inspectors), `src/` (acciones), rollup para bundle.
 - Identificador del plugin (reverse-DNS, consistente con la app):
-  **`com.naba.muxlyve.streamdeck`** (la app Electron usa `com.naba.muxlyve` como appId).
+  **`com.blackraken.muxlyve.streamdeck`** (la app Electron usa `com.blackraken.muxlyve` como appId).
 
 ## 3. Acciones (botones)
 
@@ -111,7 +111,7 @@ directamente "Twitch", "YouTube", "Kick" o "TikTok" desde la lista:
 
 | Acción (UUID) | Setting `platform` | Título por defecto |
 |---|---|---|
-| `com.naba.muxlyve.streamdeck.toggle` | `twitch` \| `youtube` \| `kick` \| `tiktok` | nombre de la plataforma |
+| `com.blackraken.muxlyve.streamdeck.toggle` | `twitch` \| `youtube` \| `kick` \| `tiktok` | nombre de la plataforma |
 
 Property inspector (panel de ajustes del botón en la app de Stream Deck):
 - Selector de plataforma (dropdown con las 4).
@@ -195,7 +195,7 @@ Dos vías, no excluyentes (empezar por la primera):
 
 ```
 muxlyve-streamdeck/
-├── com.naba.muxlyve.streamdeck.sdPlugin/
+├── com.blackraken.muxlyve.streamdeck.sdPlugin/
 │   ├── manifest.json
 │   ├── bin/            (compilado)
 │   ├── imgs/
