@@ -20,6 +20,7 @@ Este proyecto implementa una base del plugin de Stream Deck para Muxlyve siguien
 ```bash
 npm install
 npm run build
+npx @elgato/cli restart com.blackraken.muxlyve.streamdeck
 ```
 
 ## Validación
