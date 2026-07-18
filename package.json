@@ -8,10 +8,10 @@
         "validate": "streamdeck validate"
     },
     "dependencies": {
-        "@elgato/streamdeck": "^0.1.0"
+        "@elgato/streamdeck": "^2.1.0"
     },
     "devDependencies": {
-        "@elgato/cli": "^0.1.0",
+        "@elgato/cli": "^1.7.4",
         "@rollup/plugin-commonjs": "^29.0.3",
         "@rollup/plugin-node-resolve": "^16.0.3",
         "@rollup/plugin-typescript": "^12.3.0",

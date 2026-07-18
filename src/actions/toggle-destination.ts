@@ -1,44 +1,55 @@
-import { action, SingletonAction } from "@elgato/streamdeck";
+import {
+  action,
+  SingletonAction,
+  type DidReceiveSettingsEvent,
+  type KeyAction,
+  type KeyDownEvent,
+  type WillAppearEvent,
+} from "@elgato/streamdeck";
+import type { JsonValue } from "@elgato/utils";
 import { MuxlyveClient, MuxlyveState, DestinationState } from "../muxlyve-client.js";
 
-interface ToggleDestinationSettings {
+type ToggleDestinationSettings = {
   platform?: string;
   panelPort?: string;
-}
+  [key: string]: JsonValue;
+};
 
-abstract class BaseToggleDestinationAction extends SingletonAction {
+abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestinationSettings> {
   private client?: MuxlyveClient;
   private lastState?: MuxlyveState;
-  private context?: string;
+  private keyAction?: KeyAction<ToggleDestinationSettings>;
 
   protected abstract readonly defaultPlatform: string;
 
-  constructor(private readonly streamDeck: any) {
+  constructor() {
     super();
     setInterval(() => {
       void this.refreshState(false);
     }, 2500);
   }
 
-  onWillAppear(ev: any): void | Promise<void> {
-    this.context = ev.action.id;
+  onWillAppear(ev: WillAppearEvent<ToggleDestinationSettings>): void | Promise<void> {
+    if (!ev.action.isKey()) {
+      return;
+    }
+    this.keyAction = ev.action;
     this.applySettings(ev.payload.settings ?? {});
   }
 
-  onDidReceiveSettings(ev: any): void | Promise<void> {
-    this.context = ev.action.id;
+  onDidReceiveSettings(ev: DidReceiveSettingsEvent<ToggleDestinationSettings>): void | Promise<void> {
+    if (!ev.action.isKey()) {
+      return;
+    }
+    this.keyAction = ev.action;
     this.applySettings(ev.payload.settings ?? {});
   }
 
-  onKeyDown(ev: any): void | Promise<void> {
-    this.context = ev.action.id;
+  onKeyDown(ev: KeyDownEvent<ToggleDestinationSettings>): void | Promise<void> {
+    this.keyAction = ev.action;
     const settings = ev.payload.settings ?? {};
     const platform = this.normalizePlatform(settings.platform) ?? this.defaultPlatform;
     void this.togglePlatform(platform);
-  }
-
-  onKeyUp(_ev: any): void | Promise<void> {
-    // No-op
   }
 
   private applySettings(settings: ToggleDestinationSettings): void {
@@ -115,17 +126,17 @@ abstract class BaseToggleDestinationAction extends SingletonAction {
 
   private async setTitle(platform: string): Promise<void> {
     const label = platform.charAt(0).toUpperCase() + platform.slice(1);
-    await this.streamDeck.client.setTitle(this.context ?? "", label);
+    await this.keyAction?.setTitle(label);
   }
 
-  private async setImageForPlatform(platform: string, variant: string = "default"): Promise<void> {
+  private async setImageForPlatform(platform: string, variant: string): Promise<void> {
     const imagePath = this.resolveImagePath(platform, variant);
-    await this.streamDeck.client.setImage(this.context ?? "", imagePath);
+    await this.keyAction?.setImage(imagePath);
   }
 
   private resolveImagePath(platform: string, variant: string): string {
     const normalized = platform.toLowerCase();
-    return `./imgs/actions/${normalized}/${variant}.png`;
+    return `imgs/actions/${normalized}/${variant}.png`;
   }
 
   private getVisualState(destination: DestinationState, live: boolean): string {
@@ -161,11 +172,11 @@ abstract class BaseToggleDestinationAction extends SingletonAction {
   }
 
   private async showAlert(): Promise<void> {
-    await this.streamDeck.client.showAlert(this.context ?? "");
+    await this.keyAction?.showAlert();
   }
 
   private async showOk(): Promise<void> {
-    await this.streamDeck.client.showOk(this.context ?? "");
+    await this.keyAction?.showOk();
   }
 }
 
