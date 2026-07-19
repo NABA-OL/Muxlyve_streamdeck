@@ -1,0 +1,8 @@
+node_modules/
+dist/
+
+# AI Agent Context Files
+CLAUDE.md
+CONTEXT.md
+agents.md
+AI.md
