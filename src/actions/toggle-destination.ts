@@ -11,6 +11,7 @@ import { MuxlyveClient, MuxlyveState, DestinationState } from "../muxlyve-client
 
 type ToggleDestinationSettings = {
   platform?: string;
+  panelHost?: string;
   panelPort?: string;
   [key: string]: JsonValue;
 };
@@ -55,7 +56,8 @@ abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestina
   private applySettings(settings: ToggleDestinationSettings): void {
     const platform = this.normalizePlatform(settings.platform) ?? this.defaultPlatform;
     const port = Number.parseInt(settings.panelPort ?? "19080", 10) || 19080;
-    this.client = new MuxlyveClient(port);
+    const host = (settings.panelHost ?? "").trim() || "127.0.0.1";
+    this.client = new MuxlyveClient(port, host);
     void this.refreshState(true);
     void this.setTitle(platform);
   }

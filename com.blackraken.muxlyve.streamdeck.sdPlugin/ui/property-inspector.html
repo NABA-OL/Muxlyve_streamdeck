@@ -47,33 +47,63 @@
         <option value="tiktok">TikTok</option>
     </select>
 
+    <label for="panelHost">Host del panel</label>
+    <input id="panelHost" type="text" placeholder="127.0.0.1" />
+    <div class="hint">IP o hostname de la máquina que corre Muxlyve. Dejalo vacío si corre en esta misma máquina.</div>
+
     <label for="panelPort">Puerto del panel</label>
     <input id="panelPort" type="number" value="19080" min="1" max="65535" />
-    <div class="hint">El plugin usa este puerto para contactar la API local de Muxlyve.</div>
+    <div class="hint">El plugin usa este host y puerto para contactar la API de Muxlyve.</div>
 
     <script>
-        const { setSettings, getSettings } = window.connectElgatoStreamDeckSocket || {};
         const platform = document.getElementById('platform');
+        const panelHost = document.getElementById('panelHost');
         const panelPort = document.getElementById('panelPort');
 
+        let websocket;
+        let uuid;
+
+        function applySettingsToForm(settings) {
+            if (settings?.platform) platform.value = settings.platform;
+            if (settings?.panelHost) panelHost.value = settings.panelHost;
+            if (settings?.panelPort) panelPort.value = settings.panelPort;
+        }
+
         function save() {
-            const settings = {
-                platform: platform.value,
-                panelPort: panelPort.value,
-            };
-            if (typeof setSettings === 'function') {
-                setSettings(settings);
-            }
+            if (!websocket || websocket.readyState !== WebSocket.OPEN) return;
+            websocket.send(JSON.stringify({
+                event: 'setSettings',
+                context: uuid,
+                payload: {
+                    platform: platform.value,
+                    panelHost: panelHost.value,
+                    panelPort: panelPort.value,
+                },
+            }));
         }
 
         platform.addEventListener('change', save);
+        panelHost.addEventListener('input', save);
         panelPort.addEventListener('input', save);
 
-        if (typeof getSettings === 'function') {
-            getSettings((settings) => {
-                if (settings?.platform) platform.value = settings.platform;
-                if (settings?.panelPort) panelPort.value = settings.panelPort;
-            });
+        // eslint-disable-next-line no-unused-vars
+        function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+            uuid = inUUID;
+            const actionInfo = JSON.parse(inActionInfo);
+
+            websocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
+
+            websocket.onopen = () => {
+                websocket.send(JSON.stringify({ event: inRegisterEvent, uuid: inUUID }));
+                applySettingsToForm(actionInfo?.payload?.settings);
+            };
+
+            websocket.onmessage = (evt) => {
+                const message = JSON.parse(evt.data);
+                if (message.event === 'didReceiveSettings') {
+                    applySettingsToForm(message.payload?.settings);
+                }
+            };
         }
     </script>
 </body>
