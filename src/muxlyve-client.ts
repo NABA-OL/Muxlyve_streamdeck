@@ -42,7 +42,7 @@ export class MuxlyveClient {
       headers: this.getHeaders(),
     });
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      throw new Error(await this.describeFailure("GET /api/state", response));
     }
     return (await response.json()) as MuxlyveState;
   }
@@ -61,9 +61,14 @@ export class MuxlyveClient {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      throw new Error(await this.describeFailure("POST /api/destinations", response));
     }
 
     return (await response.json()) as MuxlyveState;
+  }
+
+  private async describeFailure(request: string, response: Response): Promise<string> {
+    const body = await response.text().catch(() => "");
+    return `${request} -> HTTP ${response.status}${body ? `: ${body.slice(0, 200)}` : ""}`;
   }
 }

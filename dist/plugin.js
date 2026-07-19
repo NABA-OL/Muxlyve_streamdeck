@@ -9192,7 +9192,7 @@ class MuxlyveClient {
             headers: this.getHeaders(),
         });
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            throw new Error(await this.describeFailure("GET /api/state", response));
         }
         return (await response.json());
     }
@@ -9208,9 +9208,13 @@ class MuxlyveClient {
             body: JSON.stringify(payload),
         });
         if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+            throw new Error(await this.describeFailure("POST /api/destinations", response));
         }
         return (await response.json());
+    }
+    async describeFailure(request, response) {
+        const body = await response.text().catch(() => "");
+        return `${request} -> HTTP ${response.status}${body ? `: ${body.slice(0, 200)}` : ""}`;
     }
 }
 
@@ -9272,7 +9276,8 @@ class BaseToggleDestinationAction extends SingletonAction {
             await this.renderState(platform, updated);
             await this.showOk();
         }
-        catch {
+        catch (error) {
+            streamDeck.logger.error(`[${platform}] togglePlatform failed: ${this.describeError(error)}`);
             await this.showAlert();
             await this.renderOfflineState(platform);
         }
@@ -9287,11 +9292,15 @@ class BaseToggleDestinationAction extends SingletonAction {
             this.lastState = state;
             await this.renderState(this.defaultPlatform, state);
         }
-        catch {
+        catch (error) {
+            streamDeck.logger.error(`[${this.defaultPlatform}] refreshState failed: ${this.describeError(error)}`);
             if (forceRender || !this.lastState) {
                 await this.renderOfflineState(this.defaultPlatform);
             }
         }
+    }
+    describeError(error) {
+        return error instanceof Error ? error.message : String(error);
     }
     async renderState(platform, state) {
         const destination = state.destinations.find((item) => this.matchesPlatform(item.name, platform));

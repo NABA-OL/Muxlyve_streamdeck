@@ -1,4 +1,4 @@
-import {
+import streamDeck, {
   action,
   SingletonAction,
   type DidReceiveSettingsEvent,
@@ -84,7 +84,8 @@ abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestina
       this.lastState = updated;
       await this.renderState(platform, updated);
       await this.showOk();
-    } catch {
+    } catch (error) {
+      streamDeck.logger.error(`[${platform}] togglePlatform failed: ${this.describeError(error)}`);
       await this.showAlert();
       await this.renderOfflineState(platform);
     }
@@ -100,11 +101,16 @@ abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestina
       const state = await client.getState();
       this.lastState = state;
       await this.renderState(this.defaultPlatform, state);
-    } catch {
+    } catch (error) {
+      streamDeck.logger.error(`[${this.defaultPlatform}] refreshState failed: ${this.describeError(error)}`);
       if (forceRender || !this.lastState) {
         await this.renderOfflineState(this.defaultPlatform);
       }
     }
+  }
+
+  private describeError(error: unknown): string {
+    return error instanceof Error ? error.message : String(error);
   }
 
   private async renderState(platform: string, state: MuxlyveState): Promise<void> {
