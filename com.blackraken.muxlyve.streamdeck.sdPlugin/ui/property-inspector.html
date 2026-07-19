@@ -68,6 +68,12 @@
         let websocket;
         let uuid;
 
+        function platformFromActionUUID(actionUUID) {
+            if (!actionUUID) return null;
+            const platformId = actionUUID.split('.').pop();
+            return ['twitch', 'youtube', 'kick', 'tiktok'].includes(platformId) ? platformId : null;
+        }
+
         function applySettingsToForm(settings) {
             if (settings?.platform) platform.value = settings.platform;
             if (settings?.panelHost) panelHost.value = settings.panelHost;
@@ -103,6 +109,8 @@
 
             websocket.onopen = () => {
                 websocket.send(JSON.stringify({ event: inRegisterEvent, uuid: inUUID }));
+                const defaultPlatform = platformFromActionUUID(actionInfo?.action);
+                if (defaultPlatform) platform.value = defaultPlatform;
                 applySettingsToForm(actionInfo?.payload?.settings);
             };
 
