@@ -9175,15 +9175,22 @@ typeof SuppressedError === "function" ? SuppressedError : function (error, suppr
 class MuxlyveClient {
     port;
     host;
-    constructor(port = 19080, host = "127.0.0.1") {
+    token;
+    constructor(port = 19080, host = "127.0.0.1", token) {
         this.port = port;
         this.host = host;
+        this.token = token;
     }
     getBaseUrl() {
         return `http://${this.host}:${this.port}`;
     }
+    getHeaders() {
+        return this.token ? { Authorization: `Bearer ${this.token}` } : {};
+    }
     async getState() {
-        const response = await fetch(`${this.getBaseUrl()}/api/state`);
+        const response = await fetch(`${this.getBaseUrl()}/api/state`, {
+            headers: this.getHeaders(),
+        });
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
@@ -9197,7 +9204,7 @@ class MuxlyveClient {
         };
         const response = await fetch(`${this.getBaseUrl()}/api/destinations`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...this.getHeaders() },
             body: JSON.stringify(payload),
         });
         if (!response.ok) {
@@ -9241,7 +9248,8 @@ class BaseToggleDestinationAction extends SingletonAction {
         const platform = this.normalizePlatform(settings.platform) ?? this.defaultPlatform;
         const port = Number.parseInt(settings.panelPort ?? "19080", 10) || 19080;
         const host = (settings.panelHost ?? "").trim() || "127.0.0.1";
-        this.client = new MuxlyveClient(port, host);
+        const token = (settings.panelToken ?? "").trim() || undefined;
+        this.client = new MuxlyveClient(port, host, token);
         void this.refreshState(true);
         void this.setTitle(platform);
     }

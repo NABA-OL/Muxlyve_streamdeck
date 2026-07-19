@@ -13,6 +13,7 @@ type ToggleDestinationSettings = {
   platform?: string;
   panelHost?: string;
   panelPort?: string;
+  panelToken?: string;
   [key: string]: JsonValue;
 };
 
@@ -57,7 +58,8 @@ abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestina
     const platform = this.normalizePlatform(settings.platform) ?? this.defaultPlatform;
     const port = Number.parseInt(settings.panelPort ?? "19080", 10) || 19080;
     const host = (settings.panelHost ?? "").trim() || "127.0.0.1";
-    this.client = new MuxlyveClient(port, host);
+    const token = (settings.panelToken ?? "").trim() || undefined;
+    this.client = new MuxlyveClient(port, host, token);
     void this.refreshState(true);
     void this.setTitle(platform);
   }

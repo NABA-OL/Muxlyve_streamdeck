@@ -23,14 +23,24 @@ export interface ToggleDestinationPayload {
 }
 
 export class MuxlyveClient {
-  constructor(private readonly port: number = 19080, private readonly host: string = "127.0.0.1") {}
+  constructor(
+    private readonly port: number = 19080,
+    private readonly host: string = "127.0.0.1",
+    private readonly token?: string,
+  ) {}
 
   getBaseUrl(): string {
     return `http://${this.host}:${this.port}`;
   }
 
+  private getHeaders(): HeadersInit {
+    return this.token ? { Authorization: `Bearer ${this.token}` } : {};
+  }
+
   async getState(): Promise<MuxlyveState> {
-    const response = await fetch(`${this.getBaseUrl()}/api/state`);
+    const response = await fetch(`${this.getBaseUrl()}/api/state`, {
+      headers: this.getHeaders(),
+    });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
@@ -46,7 +56,7 @@ export class MuxlyveClient {
 
     const response = await fetch(`${this.getBaseUrl()}/api/destinations`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...this.getHeaders() },
       body: JSON.stringify(payload),
     });
 
