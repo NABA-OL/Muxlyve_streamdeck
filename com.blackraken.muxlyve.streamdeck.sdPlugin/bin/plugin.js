@@ -9184,17 +9184,8 @@ class MuxlyveClient {
     getBaseUrl() {
         return `http://${this.host}:${this.port}`;
     }
-    getHeaders() {
-        return this.token ? { Authorization: `Bearer ${this.token}` } : {};
-    }
     async getState() {
-        const response = await fetch(`${this.getBaseUrl()}/api/state`, {
-            headers: this.getHeaders(),
-        });
-        if (!response.ok) {
-            throw new Error(await this.describeFailure("GET /api/state", response));
-        }
-        return (await response.json());
+        return this.request("GET", "/api/state");
     }
     async toggleDestination(destination) {
         const payload = {
@@ -9202,20 +9193,53 @@ class MuxlyveClient {
             url: destination.url,
             enabled: !destination.enabled,
         };
-        const response = await fetch(`${this.getBaseUrl()}/api/destinations`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", ...this.getHeaders() },
-            body: JSON.stringify(payload),
+        return this.request("POST", "/api/destinations", payload);
+    }
+    async startRecording(duration) {
+        return this.request("POST", "/api/record/start", { duration });
+    }
+    async stopRecording() {
+        return this.request("POST", "/api/record/stop");
+    }
+    async saveClip(duration) {
+        return this.request("POST", "/api/record/save", { duration });
+    }
+    async request(method, path, body) {
+        const headers = { ...this.getAuthHeader() };
+        if (body !== undefined) {
+            headers["Content-Type"] = "application/json";
+        }
+        const response = await fetch(`${this.getBaseUrl()}${path}`, {
+            method,
+            headers,
+            body: body !== undefined ? JSON.stringify(body) : undefined,
         });
         if (!response.ok) {
-            throw new Error(await this.describeFailure("POST /api/destinations", response));
+            throw new Error(await this.describeFailure(`${method} ${path}`, response));
         }
         return (await response.json());
+    }
+    getAuthHeader() {
+        return this.token ? { Authorization: `Bearer ${this.token}` } : {};
     }
     async describeFailure(request, response) {
         const body = await response.text().catch(() => "");
         return `${request} -> HTTP ${response.status}${body ? `: ${body.slice(0, 200)}` : ""}`;
     }
+}
+
+function buildClient(settings) {
+    const port = Number.parseInt(settings.panelPort ?? "19080", 10) || 19080;
+    const host = (settings.panelHost ?? "").trim() || "127.0.0.1";
+    const token = (settings.panelToken ?? "").trim() || undefined;
+    return new MuxlyveClient(port, host, token);
+}
+function describeError(error) {
+    return error instanceof Error ? error.message : String(error);
+}
+function normalizeDuration(value) {
+    const parsed = Number.parseInt(String(value ?? "60"), 10);
+    return parsed === 30 || parsed === 120 ? parsed : 60;
 }
 
 class BaseToggleDestinationAction extends SingletonAction {
@@ -9250,10 +9274,7 @@ class BaseToggleDestinationAction extends SingletonAction {
     }
     applySettings(settings) {
         const platform = this.normalizePlatform(settings.platform) ?? this.defaultPlatform;
-        const port = Number.parseInt(settings.panelPort ?? "19080", 10) || 19080;
-        const host = (settings.panelHost ?? "").trim() || "127.0.0.1";
-        const token = (settings.panelToken ?? "").trim() || undefined;
-        this.client = new MuxlyveClient(port, host, token);
+        this.client = buildClient(settings);
         void this.refreshState(true);
         void this.setTitle(platform);
     }
@@ -9277,7 +9298,7 @@ class BaseToggleDestinationAction extends SingletonAction {
             await this.showOk();
         }
         catch (error) {
-            streamDeck.logger.error(`[${platform}] togglePlatform failed: ${this.describeError(error)}`);
+            streamDeck.logger.error(`[${platform}] togglePlatform failed: ${describeError(error)}`);
             await this.showAlert();
             await this.renderOfflineState(platform);
         }
@@ -9293,14 +9314,11 @@ class BaseToggleDestinationAction extends SingletonAction {
             await this.renderState(this.defaultPlatform, state);
         }
         catch (error) {
-            streamDeck.logger.error(`[${this.defaultPlatform}] refreshState failed: ${this.describeError(error)}`);
+            streamDeck.logger.error(`[${this.defaultPlatform}] refreshState failed: ${describeError(error)}`);
             if (forceRender || !this.lastState) {
                 await this.renderOfflineState(this.defaultPlatform);
             }
         }
-    }
-    describeError(error) {
-        return error instanceof Error ? error.message : String(error);
     }
     async renderState(platform, state) {
         const destination = state.destinations.find((item) => this.matchesPlatform(item.name, platform));
@@ -9440,10 +9458,201 @@ let TikTokToggleDestinationAction = (() => {
     return _classThis;
 })();
 
+const FLASH_DURATION_MS = 800;
+let ToggleBufferAction = (() => {
+    let _classDecorators = [action({ UUID: "com.blackraken.muxlyve.streamdeck.toggle.buffer" })];
+    let _classDescriptor;
+    let _classExtraInitializers = [];
+    let _classThis;
+    let _classSuper = SingletonAction;
+    (class extends _classSuper {
+        static { _classThis = this; }
+        static {
+            const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
+            __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
+            _classThis = _classDescriptor.value;
+            if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
+            __runInitializers(_classThis, _classExtraInitializers);
+        }
+        client;
+        lastState;
+        keyAction;
+        constructor() {
+            super();
+            setInterval(() => {
+                void this.refreshState(false);
+            }, 2500);
+        }
+        onWillAppear(ev) {
+            if (!ev.action.isKey()) {
+                return;
+            }
+            this.keyAction = ev.action;
+            this.applySettings(ev.payload.settings ?? {});
+        }
+        onDidReceiveSettings(ev) {
+            if (!ev.action.isKey()) {
+                return;
+            }
+            this.keyAction = ev.action;
+            this.applySettings(ev.payload.settings ?? {});
+        }
+        onKeyDown(ev) {
+            this.keyAction = ev.action;
+            void this.toggleBuffer(normalizeDuration(ev.payload.settings?.duration));
+        }
+        applySettings(settings) {
+            this.client = buildClient(settings);
+            void this.refreshState(true);
+        }
+        async toggleBuffer(duration) {
+            const client = this.client;
+            if (!client) {
+                await this.keyAction?.showAlert();
+                return;
+            }
+            try {
+                const current = this.lastState ?? (await client.getState());
+                const updated = current.recorder.active ? await client.stopRecording() : await client.startRecording(duration);
+                this.lastState = updated;
+                await this.render(updated);
+                await this.keyAction?.showOk();
+            }
+            catch (error) {
+                streamDeck.logger.error(`toggleBuffer failed: ${describeError(error)}`);
+                await this.keyAction?.showAlert();
+                await this.setImage("offline");
+            }
+        }
+        async refreshState(forceRender) {
+            const client = this.client;
+            if (!client) {
+                return;
+            }
+            try {
+                const state = await client.getState();
+                this.lastState = state;
+                await this.render(state);
+            }
+            catch (error) {
+                streamDeck.logger.error(`refreshState (buffer) failed: ${describeError(error)}`);
+                if (forceRender || !this.lastState) {
+                    await this.setImage("offline");
+                }
+            }
+        }
+        async render(state) {
+            if (!state.live) {
+                await this.setImage("unavailable");
+                return;
+            }
+            await this.setImage(state.recorder.active ? "on" : "off");
+        }
+        async setImage(variant) {
+            await this.keyAction?.setImage(`imgs/actions/buffer/${variant}.png`);
+        }
+    });
+    return _classThis;
+})();
+let SaveClipAction = (() => {
+    let _classDecorators = [action({ UUID: "com.blackraken.muxlyve.streamdeck.save.clip" })];
+    let _classDescriptor;
+    let _classExtraInitializers = [];
+    let _classThis;
+    let _classSuper = SingletonAction;
+    (class extends _classSuper {
+        static { _classThis = this; }
+        static {
+            const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
+            __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
+            _classThis = _classDescriptor.value;
+            if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
+            __runInitializers(_classThis, _classExtraInitializers);
+        }
+        client;
+        lastState;
+        keyAction;
+        constructor() {
+            super();
+            setInterval(() => {
+                void this.refreshState();
+            }, 2500);
+        }
+        onWillAppear(ev) {
+            if (!ev.action.isKey()) {
+                return;
+            }
+            this.keyAction = ev.action;
+            this.applySettings(ev.payload.settings ?? {});
+        }
+        onDidReceiveSettings(ev) {
+            if (!ev.action.isKey()) {
+                return;
+            }
+            this.keyAction = ev.action;
+            this.applySettings(ev.payload.settings ?? {});
+        }
+        onKeyDown(ev) {
+            this.keyAction = ev.action;
+            void this.saveClip(normalizeDuration(ev.payload.settings?.duration));
+        }
+        applySettings(settings) {
+            this.client = buildClient(settings);
+            void this.refreshState();
+        }
+        async saveClip(duration) {
+            const client = this.client;
+            if (!client || !this.lastState?.recorder.active) {
+                await this.keyAction?.showAlert();
+                return;
+            }
+            try {
+                await client.saveClip(duration);
+                await this.keyAction?.showOk();
+                await this.flashSaved();
+            }
+            catch (error) {
+                streamDeck.logger.error(`saveClip failed: ${describeError(error)}`);
+                await this.keyAction?.showAlert();
+            }
+        }
+        async refreshState() {
+            const client = this.client;
+            if (!client) {
+                return;
+            }
+            try {
+                const state = await client.getState();
+                this.lastState = state;
+                await this.render(state);
+            }
+            catch (error) {
+                streamDeck.logger.error(`refreshState (clip) failed: ${describeError(error)}`);
+                await this.setImage("offline");
+            }
+        }
+        async render(state) {
+            await this.setImage(state.recorder.active ? "idle" : "unavailable");
+        }
+        async flashSaved() {
+            await this.setImage("saved");
+            setTimeout(() => {
+                void this.render(this.lastState);
+            }, FLASH_DURATION_MS);
+        }
+        async setImage(variant) {
+            await this.keyAction?.setImage(`imgs/actions/clip/${variant}.png`);
+        }
+    });
+    return _classThis;
+})();
+
 streamDeck.logger.info("Muxlyve Stream Deck plugin started");
 streamDeck.actions.registerAction(new TwitchToggleDestinationAction());
 streamDeck.actions.registerAction(new YoutubeToggleDestinationAction());
 streamDeck.actions.registerAction(new KickToggleDestinationAction());
 streamDeck.actions.registerAction(new TikTokToggleDestinationAction());
+streamDeck.actions.registerAction(new ToggleBufferAction());
+streamDeck.actions.registerAction(new SaveClipAction());
 await streamDeck.connect();
 //# sourceMappingURL=plugin.js.map
