@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Muxlyve Buffer</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #e6edf3;
+            background: #0d1117;
+            padding: 12px;
+        }
+        label { display: block; margin-top: 8px; font-size: 12px; color: #8b949e; }
+        select, input {
+            width: 100%; margin-top: 4px; padding: 6px;
+            border-radius: 6px; border: 1px solid #2a3140;
+            background: #161b22; color: #e6edf3; box-sizing: border-box;
+        }
+        select { cursor: pointer; }
+        .hint { font-size: 11px; color: #8b949e; margin-top: 6px; }
+    </style>
+</head>
+<body>
+    <label for="panelHost">Host del panel</label>
+    <input id="panelHost" type="text" placeholder="127.0.0.1" />
+    <div class="hint">IP o hostname de la máquina que corre Muxlyve.</div>
+
+    <label for="panelPort">Puerto del panel</label>
+    <input id="panelPort" type="number" value="19080" min="1" max="65535" />
+
+    <label for="duration">Duración del buffer</label>
+    <select id="duration">
+        <option value="30">30 segundos</option>
+        <option value="60" selected>60 segundos</option>
+        <option value="120">120 segundos</option>
+    </select>
+    <div class="hint">Cuánto tiempo de grabación mantiene el buffer en memoria.</div>
+
+    <script>
+        const panelHost = document.getElementById('panelHost');
+        const panelPort = document.getElementById('panelPort');
+        const duration = document.getElementById('duration');
+        let websocket, uuid;
+
+        function apply(settings) {
+            if (settings?.panelHost) panelHost.value = settings.panelHost;
+            if (settings?.panelPort) panelPort.value = settings.panelPort;
+            if (settings?.duration) duration.value = settings.duration;
+        }
+
+        function save() {
+            if (!websocket || websocket.readyState !== WebSocket.OPEN) return;
+            websocket.send(JSON.stringify({
+                event: 'setSettings', context: uuid,
+                payload: { panelHost: panelHost.value, panelPort: panelPort.value, duration: duration.value },
+            }));
+        }
+
+        panelHost.addEventListener('input', save);
+        panelPort.addEventListener('input', save);
+        duration.addEventListener('change', save);
+
+        function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+            uuid = inUUID;
+            const actionInfo = JSON.parse(inActionInfo);
+            websocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
+            websocket.onopen = () => {
+                websocket.send(JSON.stringify({ event: inRegisterEvent, uuid: inUUID }));
+                apply(actionInfo?.payload?.settings);
+            };
+            websocket.onmessage = (evt) => {
+                const msg = JSON.parse(evt.data);
+                if (msg.event === 'didReceiveSettings') apply(msg.payload?.settings);
+            };
+        }
+    </script>
+</body>
+</html>

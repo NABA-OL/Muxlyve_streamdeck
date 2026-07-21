@@ -6,15 +6,11 @@ import streamDeck, {
   type KeyDownEvent,
   type WillAppearEvent,
 } from "@elgato/streamdeck";
-import type { JsonValue } from "@elgato/utils";
 import { MuxlyveClient, MuxlyveState, DestinationState } from "../muxlyve-client.js";
+import { buildClient, describeError, type NetworkSettings } from "./shared.js";
 
-type ToggleDestinationSettings = {
+type ToggleDestinationSettings = NetworkSettings & {
   platform?: string;
-  panelHost?: string;
-  panelPort?: string;
-  panelToken?: string;
-  [key: string]: JsonValue;
 };
 
 abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestinationSettings> {
@@ -56,10 +52,7 @@ abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestina
 
   private applySettings(settings: ToggleDestinationSettings): void {
     const platform = this.normalizePlatform(settings.platform) ?? this.defaultPlatform;
-    const port = Number.parseInt(settings.panelPort ?? "19080", 10) || 19080;
-    const host = (settings.panelHost ?? "").trim() || "127.0.0.1";
-    const token = (settings.panelToken ?? "").trim() || undefined;
-    this.client = new MuxlyveClient(port, host, token);
+    this.client = buildClient(settings);
     void this.refreshState(true);
     void this.setTitle(platform);
   }
@@ -85,7 +78,7 @@ abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestina
       await this.renderState(platform, updated);
       await this.showOk();
     } catch (error) {
-      streamDeck.logger.error(`[${platform}] togglePlatform failed: ${this.describeError(error)}`);
+      streamDeck.logger.error(`[${platform}] togglePlatform failed: ${describeError(error)}`);
       await this.showAlert();
       await this.renderOfflineState(platform);
     }
@@ -102,15 +95,11 @@ abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestina
       this.lastState = state;
       await this.renderState(this.defaultPlatform, state);
     } catch (error) {
-      streamDeck.logger.error(`[${this.defaultPlatform}] refreshState failed: ${this.describeError(error)}`);
+      streamDeck.logger.error(`[${this.defaultPlatform}] refreshState failed: ${describeError(error)}`);
       if (forceRender || !this.lastState) {
         await this.renderOfflineState(this.defaultPlatform);
       }
     }
-  }
-
-  private describeError(error: unknown): string {
-    return error instanceof Error ? error.message : String(error);
   }
 
   private async renderState(platform: string, state: MuxlyveState): Promise<void> {

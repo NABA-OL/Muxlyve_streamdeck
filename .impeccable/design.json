@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-19T00:00:00Z",
+  "title": "Design System: Muxlyve Stream Deck Plugin",
+  "extensions": {
+    "colorMeta": {
+      "brand-bg": {
+        "role": "neutral", "displayName": "Brand Background", "canonical": "oklch(0.14 0.01 270)",
+        "tonalRamp": ["oklch(0.08 0.01 270)", "oklch(0.11 0.01 270)", "oklch(0.14 0.01 270)", "oklch(0.18 0.01 270)", "oklch(0.25 0.01 270)", "oklch(0.40 0.01 270)", "oklch(0.60 0.01 270)", "oklch(0.80 0.01 270)"]
+      },
+      "brand-surface": {
+        "role": "neutral", "displayName": "Brand Surface", "canonical": "oklch(0.17 0.015 270)",
+        "tonalRamp": ["oklch(0.10 0.015 270)", "oklch(0.13 0.015 270)", "oklch(0.17 0.015 270)", "oklch(0.22 0.015 270)", "oklch(0.30 0.015 270)", "oklch(0.45 0.015 270)", "oklch(0.65 0.015 270)", "oklch(0.85 0.015 270)"]
+      },
+      "brand-accent": {
+        "role": "primary", "displayName": "Brand Accent", "canonical": "oklch(0.56 0.18 300)",
+        "tonalRamp": ["oklch(0.10 0.18 300)", "oklch(0.20 0.18 300)", "oklch(0.35 0.18 300)", "oklch(0.56 0.18 300)", "oklch(0.65 0.15 300)", "oklch(0.75 0.10 300)", "oklch(0.85 0.06 300)", "oklch(0.95 0.02 300)"]
+      },
+      "status-live": {
+        "role": "tertiary", "displayName": "Live Green", "canonical": "oklch(0.60 0.18 160)",
+        "tonalRamp": ["oklch(0.12 0.18 160)", "oklch(0.20 0.18 160)", "oklch(0.35 0.18 160)", "oklch(0.60 0.18 160)", "oklch(0.70 0.14 160)", "oklch(0.80 0.10 160)", "oklch(0.90 0.06 160)", "oklch(0.95 0.02 160)"]
+      },
+      "status-connecting": {
+        "role": "tertiary", "displayName": "Connecting Amber", "canonical": "oklch(0.70 0.14 80)",
+        "tonalRamp": ["oklch(0.15 0.14 80)", "oklch(0.25 0.14 80)", "oklch(0.40 0.14 80)", "oklch(0.70 0.14 80)", "oklch(0.78 0.12 80)", "oklch(0.86 0.08 80)", "oklch(0.92 0.04 80)", "oklch(0.96 0.02 80)"]
+      },
+      "status-error": {
+        "role": "tertiary", "displayName": "Error Red", "canonical": "oklch(0.55 0.20 30)",
+        "tonalRamp": ["oklch(0.10 0.20 30)", "oklch(0.18 0.20 30)", "oklch(0.30 0.20 30)", "oklch(0.55 0.20 30)", "oklch(0.65 0.16 30)", "oklch(0.78 0.10 30)", "oklch(0.88 0.06 30)", "oklch(0.95 0.02 30)"]
+      },
+      "platform-twitch": {
+        "role": "custom", "displayName": "Twitch Purple", "canonical": "oklch(0.55 0.22 300)",
+        "tonalRamp": ["oklch(0.10 0.22 300)", "oklch(0.20 0.22 300)", "oklch(0.35 0.22 300)", "oklch(0.55 0.22 300)", "oklch(0.65 0.18 300)", "oklch(0.78 0.12 300)", "oklch(0.88 0.06 300)", "oklch(0.95 0.02 300)"]
+      },
+      "platform-youtube": {
+        "role": "custom", "displayName": "YouTube Red", "canonical": "oklch(0.54 0.22 30)",
+        "tonalRamp": ["oklch(0.10 0.22 30)", "oklch(0.20 0.22 30)", "oklch(0.35 0.22 30)", "oklch(0.54 0.22 30)", "oklch(0.66 0.18 30)", "oklch(0.78 0.12 30)", "oklch(0.88 0.06 30)", "oklch(0.95 0.02 30)"]
+      },
+      "platform-kick": {
+        "role": "custom", "displayName": "Kick Green", "canonical": "oklch(0.72 0.20 145)",
+        "tonalRamp": ["oklch(0.12 0.20 145)", "oklch(0.22 0.20 145)", "oklch(0.40 0.20 145)", "oklch(0.72 0.20 145)", "oklch(0.80 0.15 145)", "oklch(0.88 0.10 145)", "oklch(0.93 0.05 145)", "oklch(0.97 0.02 145)"]
+      },
+      "platform-tiktok": {
+        "role": "custom", "displayName": "TikTok Black", "canonical": "oklch(0.02 0 0)",
+        "tonalRamp": ["oklch(0 0 0)", "oklch(0.01 0 0)", "oklch(0.02 0 0)", "oklch(0.05 0 0)", "oklch(0.10 0 0)", "oklch(0.20 0 0)", "oklch(0.40 0 0)", "oklch(0.70 0 0)"]
+      }
+    },
+    "typographyMeta": {
+      "title": { "displayName": "Title", "purpose": "Section heading in property inspector." },
+      "label": { "displayName": "Label", "purpose": "Input labels." },
+      "body": { "displayName": "Body", "purpose": "Input values and select options." },
+      "hint": { "displayName": "Hint", "purpose": "Helper text below inputs." }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Property Inspector",
+      "kind": "custom",
+      "refersTo": "property-inspector-panel",
+      "description": "Panel HTML embebido en la app de Stream Deck para configurar plataforma, host y puerto.",
+      "html": "<div class=\"ds-pi\"><h3 class=\"ds-pi-title\">Muxlyve</h3><label class=\"ds-pi-label\" for=\"platform\">Plataforma</label><select class=\"ds-pi-select\" id=\"platform\"><option value=\"twitch\">Twitch</option><option value=\"youtube\">YouTube</option><option value=\"kick\">Kick</option><option value=\"tiktok\">TikTok</option></select><label class=\"ds-pi-label\" for=\"panelHost\">Host del panel</label><input class=\"ds-pi-input\" id=\"panelHost\" type=\"text\" placeholder=\"127.0.0.1\" /><span class=\"ds-pi-hint\">IP o hostname de la máquina que corre Muxlyve.</span><label class=\"ds-pi-label\" for=\"panelPort\">Puerto del panel</label><input class=\"ds-pi-input\" id=\"panelPort\" type=\"number\" value=\"19080\" min=\"1\" max=\"65535\" /><span class=\"ds-pi-hint\">Puerto de la API local de Muxlyve.</span></div>",
+      "css": ".ds-pi{font-family:system-ui,-apple-system,sans-serif;background:#0d1117;padding:12px;color:#e6edf3;}.ds-pi-title{margin:0 0 8px;font-size:13px;font-weight:600;color:#7c5cff;}.ds-pi-label{display:block;margin-top:8px;font-size:12px;color:#8b949e;}.ds-pi-select,.ds-pi-input{width:100%;box-sizing:border-box;margin-top:4px;padding:6px;background:#161b22;border:1px solid #2a3140;color:#e6edf3;border-radius:6px;font-size:12px;}.ds-pi-hint{display:block;font-size:11px;color:#8b949e;margin-top:6px;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Streamer's Edge",
+    "overview": "Muxlyve Stream Deck plugin es la herramienta del streamer que va en serio. Oscura, directa, sin concesiones. Cada botón comunica estado en un vistazo — el streamer no lee, reconoce. La interfaz es honrada: plana, sin sombras falsas, sin decoración que no aporte información de estado. El sistema visual se despliega en tres superficies: los iconos de botón (72×72 PNG), el property inspector (panel HTML), y los assets de Marketplace.",
+    "keyCharacteristics": [
+      "Plano y honesto. Sin sombras, sin glassmorphism, sin gradientes decorativos.",
+      "Estado sobre estilo. Cada variante visual comunica estado (live/connecting/error/offline).",
+      "Oscuro por diseño. Fondo #0d1117, superficies #161b22.",
+      "Firma morada. El acento #7c5cff es la señal Muxlyve."
+    ],
+    "rules": [
+      { "name": "The Flat-By-Default Rule", "body": "Las superficies son planas en reposo. No hay sombras de hover, no hay elevación. Un borde de 1px (#2a3140) separa los campos del fondo. Esa es la única demarcación.", "section": "elevation" },
+      { "name": "The Platform-Color Rule", "body": "Los colores de plataforma son fijos e innegociables. No modificarlos para 'armonizar'. Su reconocibilidad es más importante que la cohesión de paleta.", "section": "colors" }
+    ],
+    "dos": [
+      "Usar brand-bg (#0d1117) como fondo base del property inspector y assets de Marketplace.",
+      "Usar brand-accent (#7c5cff) exclusivamente para elementos Muxlyve.",
+      "Mantener los colores de plataforma exactos (Twitch Purple #9147ff, YouTube Red #ff0000, Kick Green #53fc18, TikTok Black #010101).",
+      "Usar los 7 estados visuales para cubrir toda la grilla de condición.",
+      "Comunicar estado con al menos dos señales simultáneas para accesibilidad.",
+      "Generar los PNG a 72×72 y 144×144 (@2x) para cubrir dispositivos SD de distintas densidades."
+    ],
+    "donts": [
+      "Usar sombras, glassmorphism, blur, gradientes decorativos, ni glow excesivo.",
+      "Aplicar bordes redondeados >12px en ningún elemento.",
+      "Modificar los colores de plataforma para armonizar con la paleta Muxlyve.",
+      "Usar el acento morado como fondo de botón.",
+      "Depender solo del color para comunicar estado."
+    ]
+  }
+}
