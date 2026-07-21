@@ -22,26 +22,39 @@
     </style>
 </head>
 <body>
-    <label for="panelHost">Host del panel</label>
+    <label for="panelHost" id="lbl-host">Muxlyve Host</label>
     <input id="panelHost" type="text" placeholder="127.0.0.1" />
-    <div class="hint">IP o hostname de la máquina que corre Muxlyve.</div>
+    <div class="hint" id="hint-host">IP or hostname of the machine running Muxlyve.</div>
 
-    <label for="panelPort">Puerto del panel</label>
+    <label for="panelPort" id="lbl-port">Muxlyve Port</label>
     <input id="panelPort" type="number" value="19080" min="1" max="65535" />
 
-    <label for="duration">Duración del buffer</label>
+    <label for="duration" id="lbl-duration">Buffer Duration</label>
     <select id="duration">
-        <option value="30">30 segundos</option>
-        <option value="60" selected>60 segundos</option>
-        <option value="120">120 segundos</option>
+        <option value="30" id="opt-30">30 seconds</option>
+        <option value="60" id="opt-60" selected>60 seconds</option>
+        <option value="120" id="opt-120">120 seconds</option>
     </select>
-    <div class="hint">Cuánto tiempo de grabación mantiene el buffer en memoria.</div>
+    <div class="hint" id="hint-duration">How much recording time the buffer keeps in memory.</div>
 
     <script>
         const panelHost = document.getElementById('panelHost');
         const panelPort = document.getElementById('panelPort');
         const duration = document.getElementById('duration');
         let websocket, uuid;
+
+        const locales = {
+            es: {
+                lblHost: "Host de Muxlyve",
+                hintHost: "IP o hostname de la máquina que corre Muxlyve.",
+                lblPort: "Puerto de Muxlyve",
+                lblDuration: "Duración del buffer",
+                opt30: "30 segundos",
+                opt60: "60 segundos",
+                opt120: "120 segundos",
+                hintDuration: "Cuánto tiempo de grabación mantiene el buffer en memoria."
+            }
+        };
 
         function apply(settings) {
             if (settings?.panelHost) panelHost.value = settings.panelHost;
@@ -64,6 +77,24 @@
         function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
             uuid = inUUID;
             const actionInfo = JSON.parse(inActionInfo);
+            
+            // --- LÓGICA DE TRADUCCIÓN ---
+            const info = JSON.parse(inInfo);
+            const appLanguage = info.application.language;
+            
+            if (appLanguage === 'es' && locales.es) {
+                const t = locales.es;
+                document.getElementById('lbl-host').innerText = t.lblHost;
+                document.getElementById('hint-host').innerText = t.hintHost;
+                document.getElementById('lbl-port').innerText = t.lblPort;
+                document.getElementById('lbl-duration').innerText = t.lblDuration;
+                document.getElementById('opt-30').innerText = t.opt30;
+                document.getElementById('opt-60').innerText = t.opt60;
+                document.getElementById('opt-120').innerText = t.opt120;
+                document.getElementById('hint-duration').innerText = t.hintDuration;
+            }
+            // ----------------------------
+
             websocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
             websocket.onopen = () => {
                 websocket.send(JSON.stringify({ event: inRegisterEvent, uuid: inUUID }));

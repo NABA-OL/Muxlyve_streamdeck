@@ -79,7 +79,7 @@
         {
             "Name": "Buffer",
             "UUID": "com.blackraken.muxlyve.streamdeck.toggle.buffer",
-            "Icon": "imgs/actions/buffer/on",
+            "Icon": "imgs/actions/buffer/icon",
             "Tooltip": "Activar/desactivar buffer de grabación",
             "PropertyInspectorPath": "ui/property-inspector-buffer.html",
             "States": [
@@ -91,7 +91,7 @@
         {
             "Name": "Guardar clip",
             "UUID": "com.blackraken.muxlyve.streamdeck.save.clip",
-            "Icon": "imgs/actions/clip/idle",
+            "Icon": "imgs/actions/clip/icon",
             "Tooltip": "Guardar clip del buffer",
             "PropertyInspectorPath": "ui/property-inspector-clip.html",
             "States": [
