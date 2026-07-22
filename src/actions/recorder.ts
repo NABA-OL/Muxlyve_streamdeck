@@ -94,7 +94,7 @@ export class ToggleBufferAction extends SingletonAction<BufferSettings> {
 
   private async render(state: MuxlyveState): Promise<void> {
     if (!state.live) {
-      await this.setImage("unavailable");
+      await this.setImage("disabled");
       return;
     }
 
@@ -183,11 +183,11 @@ export class SaveClipAction extends SingletonAction<ClipSettings> {
   }
 
   private async render(state: MuxlyveState): Promise<void> {
-    await this.setImage(state.recorder.active ? "idle" : "unavailable");
+    await this.setImage(state.recorder.active ? "idle" : "disabled");
   }
 
   private async flashSaved(): Promise<void> {
-    await this.setImage("saved");
+    await this.setImage("on");
     setTimeout(() => {
       void this.render(this.lastState as MuxlyveState);
     }, FLASH_DURATION_MS);

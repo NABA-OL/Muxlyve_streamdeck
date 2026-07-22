@@ -9543,7 +9543,7 @@ let ToggleBufferAction = (() => {
         }
         async render(state) {
             if (!state.live) {
-                await this.setImage("unavailable");
+                await this.setImage("disabled");
                 return;
             }
             await this.setImage(state.recorder.active ? "on" : "off");
@@ -9632,10 +9632,10 @@ let SaveClipAction = (() => {
             }
         }
         async render(state) {
-            await this.setImage(state.recorder.active ? "idle" : "unavailable");
+            await this.setImage(state.recorder.active ? "idle" : "disabled");
         }
         async flashSaved() {
-            await this.setImage("saved");
+            await this.setImage("on");
             setTimeout(() => {
                 void this.render(this.lastState);
             }, FLASH_DURATION_MS);

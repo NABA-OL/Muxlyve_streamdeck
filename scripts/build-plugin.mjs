@@ -1,5 +1,4 @@
 import { mkdirSync, copyFileSync, existsSync } from "node:fs";
-import { execSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,9 +9,6 @@ const distDir = join(root, "dist");
 const binDir = join(pluginDir, "bin");
 
 mkdirSync(binDir, { recursive: true });
-
-// Generate PNG assets from SVGs
-execSync("node scripts/generate-assets.mjs", { cwd: root, stdio: "inherit" });
 
 // Copy compiled bundle
 const pluginBundle = join(distDir, "plugin.js");

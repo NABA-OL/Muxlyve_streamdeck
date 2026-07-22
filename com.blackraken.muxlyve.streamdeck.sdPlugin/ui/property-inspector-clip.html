@@ -29,6 +29,10 @@
     <label for="panelPort" id="lbl-port">Muxlyve Port</label>
     <input id="panelPort" type="number" value="19080" min="1" max="65535" />
 
+    <label for="panelToken" id="lbl-token">Muxlyve Token</label>
+    <input id="panelToken" type="password" placeholder="Only required if Muxlyve runs on another machine" />
+    <div class="hint" id="hint-token">Copy it from Muxlyve → Settings → Stream Deck Connection. Required when "Allow LAN Panel" is active.</div>
+
     <label for="duration" id="lbl-duration">Clip Duration</label>
     <select id="duration">
         <option value="30" id="opt-30">30 seconds</option>
@@ -40,6 +44,7 @@
     <script>
         const panelHost = document.getElementById('panelHost');
         const panelPort = document.getElementById('panelPort');
+        const panelToken = document.getElementById('panelToken');
         const duration = document.getElementById('duration');
         let websocket, uuid;
 
@@ -48,6 +53,8 @@
                 lblHost: "Host de Muxlyve",
                 hintHost: "IP o hostname de la máquina que corre Muxlyve.",
                 lblPort: "Puerto de Muxlyve",
+                lblToken: "Token de Muxlyve",
+                hintToken: "Cópialo desde Muxlyve → Ajustes → Conexión Stream Deck. Requerido cuando 'Allow LAN Panel' está activo.",
                 lblDuration: "Duración del clip",
                 opt30: "30 segundos",
                 opt60: "60 segundos",
@@ -59,6 +66,7 @@
         function apply(settings) {
             if (settings?.panelHost) panelHost.value = settings.panelHost;
             if (settings?.panelPort) panelPort.value = settings.panelPort;
+            if (settings?.panelToken) panelToken.value = settings.panelToken;
             if (settings?.duration) duration.value = settings.duration;
         }
 
@@ -66,12 +74,13 @@
             if (!websocket || websocket.readyState !== WebSocket.OPEN) return;
             websocket.send(JSON.stringify({
                 event: 'setSettings', context: uuid,
-                payload: { panelHost: panelHost.value, panelPort: panelPort.value, duration: duration.value },
+                payload: { panelHost: panelHost.value, panelPort: panelPort.value, panelToken: panelToken.value, duration: duration.value },
             }));
         }
 
         panelHost.addEventListener('input', save);
         panelPort.addEventListener('input', save);
+        panelToken.addEventListener('input', save);
         duration.addEventListener('change', save);
 
         function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
@@ -87,6 +96,8 @@
                 document.getElementById('lbl-host').innerText = t.lblHost;
                 document.getElementById('hint-host').innerText = t.hintHost;
                 document.getElementById('lbl-port').innerText = t.lblPort;
+                document.getElementById('lbl-token').innerText = t.lblToken;
+                document.getElementById('hint-token').innerText = t.hintToken;
                 document.getElementById('lbl-duration').innerText = t.lblDuration;
                 document.getElementById('opt-30').innerText = t.opt30;
                 document.getElementById('opt-60').innerText = t.opt60;
