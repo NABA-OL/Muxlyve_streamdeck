@@ -39,7 +39,8 @@
 </head>
 
 <body>
-    <label for="platform">Plataforma</label>
+    <!-- Se añadieron IDs a los labels y hints para poder modificarlos con JS -->
+    <label for="platform" id="lbl-platform">Platform</label>
     <select id="platform">
         <option value="twitch">Twitch</option>
         <option value="youtube">YouTube</option>
@@ -47,17 +48,17 @@
         <option value="tiktok">TikTok</option>
     </select>
 
-    <label for="panelHost">Host del panel</label>
+    <label for="panelHost" id="lbl-host">Muxlyve Host</label>
     <input id="panelHost" type="text" placeholder="127.0.0.1" />
-    <div class="hint">IP o hostname de la máquina que corre Muxlyve. Dejalo vacío si corre en esta misma máquina.</div>
+    <div class="hint" id="hint-host">IP or hostname of the machine running Muxlyve. Leave empty if running locally.</div>
 
-    <label for="panelPort">Puerto del panel</label>
+    <label for="panelPort" id="lbl-port">Muxlyve Port</label>
     <input id="panelPort" type="number" value="19080" min="1" max="65535" />
-    <div class="hint">El plugin usa este host y puerto para contactar la API de Muxlyve.</div>
+    <div class="hint" id="hint-port">The plugin uses this host and port to contact the Muxlyve API.</div>
 
-    <label for="panelToken">Token del panel</label>
-    <input id="panelToken" type="password" placeholder="Solo necesario si Muxlyve corre en otra máquina" />
-    <div class="hint">Copialo desde Muxlyve → Ajustes → Conexión Stream Deck. Requerido cuando "Allow LAN Panel" está activo.</div>
+    <label for="panelToken" id="lbl-token">Muxlyve Token</label>
+    <input id="panelToken" type="password" placeholder="Only required if Muxlyve runs on another machine" />
+    <div class="hint" id="hint-token">Copy it from Muxlyve → Settings → Stream Deck Connection. Required when "Allow LAN Panel" is active.</div>
 
     <script>
         const platform = document.getElementById('platform');
@@ -67,6 +68,20 @@
 
         let websocket;
         let uuid;
+
+        // DICCIONARIO DE TRADUCCIONES
+        const locales = {
+            es: {
+                lblPlatform: "Plataforma",
+                lblHost: "Host de Muxlyve",
+                hintHost: "IP o hostname de la máquina que corre Muxlyve. Déjalo vacío si corre en esta misma máquina.",
+                lblPort: "Puerto de Muxlyve",
+                hintPort: "El plugin usa este host y puerto para contactar la API de Muxlyve.",
+                lblToken: "Token de Muxlyve",
+                placeholderToken: "Solo necesario si Muxlyve corre en otra máquina",
+                hintToken: "Cópialo desde Muxlyve → Ajustes → Conexión Stream Deck. Requerido cuando 'Allow LAN Panel' está activo."
+            }
+        };
 
         function platformFromActionUUID(actionUUID) {
             if (!actionUUID) return null;
@@ -104,6 +119,23 @@
         function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
             uuid = inUUID;
             const actionInfo = JSON.parse(inActionInfo);
+            
+            // --- LÓGICA DE TRADUCCIÓN ---
+            const info = JSON.parse(inInfo);
+            const appLanguage = info.application.language; // Detecta el idioma de Stream Deck
+            
+            if (appLanguage === 'es' && locales.es) {
+                const t = locales.es;
+                document.getElementById('lbl-platform').innerText = t.lblPlatform;
+                document.getElementById('lbl-host').innerText = t.lblHost;
+                document.getElementById('hint-host').innerText = t.hintHost;
+                document.getElementById('lbl-port').innerText = t.lblPort;
+                document.getElementById('hint-port').innerText = t.hintPort;
+                document.getElementById('lbl-token').innerText = t.lblToken;
+                document.getElementById('hint-token').innerText = t.hintToken;
+                panelToken.placeholder = t.placeholderToken;
+            }
+            // ----------------------------
 
             websocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
 

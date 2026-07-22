@@ -10,16 +10,27 @@ export interface DestinationState {
   attempts?: number;
 }
 
+export interface RecorderState {
+  active: boolean;
+  duration: number;
+}
+
 export interface MuxlyveState {
   live: boolean;
   uptime: number;
   destinations: DestinationState[];
+  recorder: RecorderState;
 }
 
 export interface ToggleDestinationPayload {
   name: string;
   url?: string;
   enabled: boolean;
+}
+
+export interface SaveClipResult {
+  ok: boolean;
+  path: string;
 }
 
 export class MuxlyveClient {
@@ -33,18 +44,8 @@ export class MuxlyveClient {
     return `http://${this.host}:${this.port}`;
   }
 
-  private getHeaders(): HeadersInit {
-    return this.token ? { Authorization: `Bearer ${this.token}` } : {};
-  }
-
   async getState(): Promise<MuxlyveState> {
-    const response = await fetch(`${this.getBaseUrl()}/api/state`, {
-      headers: this.getHeaders(),
-    });
-    if (!response.ok) {
-      throw new Error(await this.describeFailure("GET /api/state", response));
-    }
-    return (await response.json()) as MuxlyveState;
+    return this.request<MuxlyveState>("GET", "/api/state");
   }
 
   async toggleDestination(destination: DestinationState): Promise<MuxlyveState> {
@@ -53,18 +54,42 @@ export class MuxlyveClient {
       url: destination.url,
       enabled: !destination.enabled,
     };
+    return this.request<MuxlyveState>("POST", "/api/destinations", payload);
+  }
 
-    const response = await fetch(`${this.getBaseUrl()}/api/destinations`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...this.getHeaders() },
-      body: JSON.stringify(payload),
+  async startRecording(duration: number): Promise<MuxlyveState> {
+    return this.request<MuxlyveState>("POST", "/api/record/start", { duration });
+  }
+
+  async stopRecording(): Promise<MuxlyveState> {
+    return this.request<MuxlyveState>("POST", "/api/record/stop");
+  }
+
+  async saveClip(duration: number): Promise<SaveClipResult> {
+    return this.request<SaveClipResult>("POST", "/api/record/save", { duration });
+  }
+
+  private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    const headers: Record<string, string> = { ...this.getAuthHeader() };
+    if (body !== undefined) {
+      headers["Content-Type"] = "application/json";
+    }
+
+    const response = await fetch(`${this.getBaseUrl()}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
     });
 
     if (!response.ok) {
-      throw new Error(await this.describeFailure("POST /api/destinations", response));
+      throw new Error(await this.describeFailure(`${method} ${path}`, response));
     }
 
-    return (await response.json()) as MuxlyveState;
+    return (await response.json()) as T;
+  }
+
+  private getAuthHeader(): Record<string, string> {
+    return this.token ? { Authorization: `Bearer ${this.token}` } : {};
   }
 
   private async describeFailure(request: string, response: Response): Promise<string> {
