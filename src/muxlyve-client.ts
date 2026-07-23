@@ -15,11 +15,17 @@ export interface RecorderState {
   duration: number;
 }
 
+export interface FullRecorderState {
+  active: boolean;
+  startedAt: number | null;
+}
+
 export interface MuxlyveState {
   live: boolean;
   uptime: number;
   destinations: DestinationState[];
   recorder: RecorderState;
+  fullRecorder: FullRecorderState;
 }
 
 export interface ToggleDestinationPayload {
@@ -67,6 +73,14 @@ export class MuxlyveClient {
 
   async saveClip(duration: number): Promise<SaveClipResult> {
     return this.request<SaveClipResult>("POST", "/api/record/save", { duration });
+  }
+
+  async startFullRecording(): Promise<MuxlyveState> {
+    return this.request<MuxlyveState>("POST", "/api/fullrecord/start", {});
+  }
+
+  async stopFullRecording(): Promise<MuxlyveState> {
+    return this.request<MuxlyveState>("POST", "/api/fullrecord/stop");
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {

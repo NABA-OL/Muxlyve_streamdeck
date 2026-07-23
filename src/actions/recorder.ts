@@ -197,3 +197,91 @@ export class SaveClipAction extends SingletonAction<ClipSettings> {
     await this.keyAction?.setImage(`imgs/actions/clip/${variant}.png`);
   }
 }
+
+@action({ UUID: "com.blackraken.muxlyve.streamdeck.toggle.fullrecord" })
+export class ToggleFullRecordAction extends SingletonAction<NetworkSettings> {
+  private client?: MuxlyveClient;
+  private lastState?: MuxlyveState;
+  private keyAction?: KeyAction<NetworkSettings>;
+
+  constructor() {
+    super();
+    setInterval(() => {
+      void this.refreshState(false);
+    }, 2500);
+  }
+
+  onWillAppear(ev: WillAppearEvent<NetworkSettings>): void | Promise<void> {
+    if (!ev.action.isKey()) {
+      return;
+    }
+    this.keyAction = ev.action;
+    this.applySettings(ev.payload.settings ?? {});
+  }
+
+  onDidReceiveSettings(ev: DidReceiveSettingsEvent<NetworkSettings>): void | Promise<void> {
+    if (!ev.action.isKey()) {
+      return;
+    }
+    this.keyAction = ev.action;
+    this.applySettings(ev.payload.settings ?? {});
+  }
+
+  onKeyDown(ev: KeyDownEvent<NetworkSettings>): void | Promise<void> {
+    this.keyAction = ev.action;
+    void this.toggleFullRecord();
+  }
+
+  private applySettings(settings: NetworkSettings): void {
+    this.client = buildClient(settings);
+    void this.refreshState(true);
+  }
+
+  private async toggleFullRecord(): Promise<void> {
+    const client = this.client;
+    if (!client) {
+      await this.keyAction?.showAlert();
+      return;
+    }
+
+    try {
+      const current = this.lastState ?? (await client.getState());
+      const updated = current.fullRecorder.active
+        ? await client.stopFullRecording()
+        : await client.startFullRecording();
+      this.lastState = updated;
+      await this.render(updated);
+      await this.keyAction?.showOk();
+    } catch (error) {
+      streamDeck.logger.error(`toggleFullRecord failed: ${describeError(error)}`);
+      await this.keyAction?.showAlert();
+      await this.setImage("offline");
+    }
+  }
+
+  private async refreshState(forceRender: boolean): Promise<void> {
+    const client = this.client;
+    if (!client) {
+      return;
+    }
+
+    try {
+      const state = await client.getState();
+      this.lastState = state;
+      await this.render(state);
+    } catch (error) {
+      streamDeck.logger.error(`refreshState (fullrecord) failed: ${describeError(error)}`);
+      if (forceRender || !this.lastState) {
+        await this.setImage("offline");
+      }
+    }
+  }
+
+  private async render(state: MuxlyveState): Promise<void> {
+    await this.setImage(state.fullRecorder.active ? "on" : "off");
+  }
+
+  private async setImage(variant: string): Promise<void> {
+    await this.keyAction?.setImage(`imgs/actions/fullrecord/${variant}.png`);
+  }
+}

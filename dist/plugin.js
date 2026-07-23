@@ -9204,6 +9204,12 @@ class MuxlyveClient {
     async saveClip(duration) {
         return this.request("POST", "/api/record/save", { duration });
     }
+    async startFullRecording() {
+        return this.request("POST", "/api/fullrecord/start", {});
+    }
+    async stopFullRecording() {
+        return this.request("POST", "/api/fullrecord/stop");
+    }
     async request(method, path, body) {
         const headers = { ...this.getAuthHeader() };
         if (body !== undefined) {
@@ -9239,7 +9245,7 @@ function describeError(error) {
 }
 function normalizeDuration(value) {
     const parsed = Number.parseInt(String(value ?? "60"), 10);
-    return parsed === 30 || parsed === 120 ? parsed : 60;
+    return parsed === 300 || parsed === 600 || parsed === 900 ? parsed : 60;
 }
 
 class BaseToggleDestinationAction extends SingletonAction {
@@ -9646,6 +9652,99 @@ let SaveClipAction = (() => {
     });
     return _classThis;
 })();
+let ToggleFullRecordAction = (() => {
+    let _classDecorators = [action({ UUID: "com.blackraken.muxlyve.streamdeck.toggle.fullrecord" })];
+    let _classDescriptor;
+    let _classExtraInitializers = [];
+    let _classThis;
+    let _classSuper = SingletonAction;
+    (class extends _classSuper {
+        static { _classThis = this; }
+        static {
+            const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
+            __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
+            _classThis = _classDescriptor.value;
+            if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
+            __runInitializers(_classThis, _classExtraInitializers);
+        }
+        client;
+        lastState;
+        keyAction;
+        constructor() {
+            super();
+            setInterval(() => {
+                void this.refreshState(false);
+            }, 2500);
+        }
+        onWillAppear(ev) {
+            if (!ev.action.isKey()) {
+                return;
+            }
+            this.keyAction = ev.action;
+            this.applySettings(ev.payload.settings ?? {});
+        }
+        onDidReceiveSettings(ev) {
+            if (!ev.action.isKey()) {
+                return;
+            }
+            this.keyAction = ev.action;
+            this.applySettings(ev.payload.settings ?? {});
+        }
+        onKeyDown(ev) {
+            this.keyAction = ev.action;
+            void this.toggleFullRecord();
+        }
+        applySettings(settings) {
+            this.client = buildClient(settings);
+            void this.refreshState(true);
+        }
+        async toggleFullRecord() {
+            const client = this.client;
+            if (!client) {
+                await this.keyAction?.showAlert();
+                return;
+            }
+            try {
+                const current = this.lastState ?? (await client.getState());
+                const updated = current.fullRecorder.active
+                    ? await client.stopFullRecording()
+                    : await client.startFullRecording();
+                this.lastState = updated;
+                await this.render(updated);
+                await this.keyAction?.showOk();
+            }
+            catch (error) {
+                streamDeck.logger.error(`toggleFullRecord failed: ${describeError(error)}`);
+                await this.keyAction?.showAlert();
+                await this.setImage("offline");
+            }
+        }
+        async refreshState(forceRender) {
+            const client = this.client;
+            if (!client) {
+                return;
+            }
+            try {
+                const state = await client.getState();
+                this.lastState = state;
+                await this.render(state);
+            }
+            catch (error) {
+                streamDeck.logger.error(`refreshState (fullrecord) failed: ${describeError(error)}`);
+                if (forceRender || !this.lastState) {
+                    await this.setImage("offline");
+                }
+            }
+        }
+        async render(state) {
+            await this.setImage(state.fullRecorder.active ? "on" : "off");
+        }
+        async setImage(variant) {
+            await this.keyAction?.setImage(`imgs/actions/fullrecord/${variant}.png`);
+        }
+    });
+    return _classThis;
+})();
 
 streamDeck.logger.info("Muxlyve Stream Deck plugin started");
 streamDeck.actions.registerAction(new TwitchToggleDestinationAction());
@@ -9654,5 +9753,6 @@ streamDeck.actions.registerAction(new KickToggleDestinationAction());
 streamDeck.actions.registerAction(new TikTokToggleDestinationAction());
 streamDeck.actions.registerAction(new ToggleBufferAction());
 streamDeck.actions.registerAction(new SaveClipAction());
+streamDeck.actions.registerAction(new ToggleFullRecordAction());
 await streamDeck.connect();
 //# sourceMappingURL=plugin.js.map

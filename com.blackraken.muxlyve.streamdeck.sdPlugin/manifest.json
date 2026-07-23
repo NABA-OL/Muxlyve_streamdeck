@@ -99,6 +99,18 @@
                     "Image": "imgs/actions/clip/idle"
                 }
             ]
+        },
+        {
+            "Name": "Grabación completa",
+            "UUID": "com.blackraken.muxlyve.streamdeck.toggle.fullrecord",
+            "Icon": "imgs/actions/fullrecord/icon",
+            "Tooltip": "Activar/desactivar grabación completa",
+            "PropertyInspectorPath": "ui/property-inspector-fullrecord.html",
+            "States": [
+                {
+                    "Image": "imgs/actions/fullrecord/off"
+                }
+            ]
         }
     ]
 }

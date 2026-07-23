@@ -19,9 +19,9 @@ export function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-export type RecorderDuration = 30 | 60 | 120;
+export type RecorderDuration = 60 | 300 | 600 | 900;
 
 export function normalizeDuration(value: unknown): RecorderDuration {
   const parsed = Number.parseInt(String(value ?? "60"), 10);
-  return parsed === 30 || parsed === 120 ? parsed : 60;
+  return parsed === 300 || parsed === 600 || parsed === 900 ? parsed : 60;
 }
