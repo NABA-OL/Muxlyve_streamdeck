@@ -7,7 +7,7 @@ import streamDeck, {
   type WillAppearEvent,
 } from "@elgato/streamdeck";
 import { MuxlyveClient, MuxlyveState, DestinationState } from "../muxlyve-client.js";
-import { buildClient, describeError, type NetworkSettings } from "./shared.js";
+import { buildClient, describeError, ConnectivityLog, type NetworkSettings } from "./shared.js";
 
 type ToggleDestinationSettings = NetworkSettings & {
   platform?: string;
@@ -17,6 +17,7 @@ abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestina
   private client?: MuxlyveClient;
   private lastState?: MuxlyveState;
   private keyAction?: KeyAction<ToggleDestinationSettings>;
+  private readonly connectivity = new ConnectivityLog();
 
   protected abstract readonly defaultPlatform: string;
 
@@ -75,10 +76,14 @@ abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestina
 
       const updated = await client.toggleDestination(destination);
       this.lastState = updated;
+      this.connectivity.reportSuccess(streamDeck.logger, `[${platform}] connection restored`);
       await this.renderState(platform, updated);
       await this.showOk();
     } catch (error) {
-      streamDeck.logger.error(`[${platform}] togglePlatform failed: ${describeError(error)}`);
+      this.connectivity.reportFailure(
+        streamDeck.logger,
+        `[${platform}] togglePlatform failed: ${describeError(error)}`,
+      );
       await this.showAlert();
       await this.renderOfflineState(platform);
     }
@@ -93,9 +98,13 @@ abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestina
     try {
       const state = await client.getState();
       this.lastState = state;
+      this.connectivity.reportSuccess(streamDeck.logger, `[${this.defaultPlatform}] connection restored`);
       await this.renderState(this.defaultPlatform, state);
     } catch (error) {
-      streamDeck.logger.error(`[${this.defaultPlatform}] refreshState failed: ${describeError(error)}`);
+      this.connectivity.reportFailure(
+        streamDeck.logger,
+        `[${this.defaultPlatform}] refreshState failed: ${describeError(error)}`,
+      );
       if (forceRender || !this.lastState) {
         await this.renderOfflineState(this.defaultPlatform);
       }

@@ -7,7 +7,14 @@ import streamDeck, {
   type WillAppearEvent,
 } from "@elgato/streamdeck";
 import { MuxlyveClient, MuxlyveState } from "../muxlyve-client.js";
-import { buildClient, describeError, normalizeDuration, type NetworkSettings, type RecorderDuration } from "./shared.js";
+import {
+  buildClient,
+  describeError,
+  normalizeDuration,
+  ConnectivityLog,
+  type NetworkSettings,
+  type RecorderDuration,
+} from "./shared.js";
 
 type BufferSettings = NetworkSettings & {
   duration?: string;
@@ -20,6 +27,7 @@ export class ToggleBufferAction extends SingletonAction<BufferSettings> {
   private client?: MuxlyveClient;
   private lastState?: MuxlyveState;
   private keyAction?: KeyAction<BufferSettings>;
+  private readonly connectivity = new ConnectivityLog();
 
   constructor() {
     super();
@@ -65,10 +73,11 @@ export class ToggleBufferAction extends SingletonAction<BufferSettings> {
       const current = this.lastState ?? (await client.getState());
       const updated = current.recorder.active ? await client.stopRecording() : await client.startRecording(duration);
       this.lastState = updated;
+      this.connectivity.reportSuccess(streamDeck.logger, "[buffer] connection restored");
       await this.render(updated);
       await this.keyAction?.showOk();
     } catch (error) {
-      streamDeck.logger.error(`toggleBuffer failed: ${describeError(error)}`);
+      this.connectivity.reportFailure(streamDeck.logger, `[buffer] toggleBuffer failed: ${describeError(error)}`);
       await this.keyAction?.showAlert();
       await this.setImage("offline");
     }
@@ -83,9 +92,10 @@ export class ToggleBufferAction extends SingletonAction<BufferSettings> {
     try {
       const state = await client.getState();
       this.lastState = state;
+      this.connectivity.reportSuccess(streamDeck.logger, "[buffer] connection restored");
       await this.render(state);
     } catch (error) {
-      streamDeck.logger.error(`refreshState (buffer) failed: ${describeError(error)}`);
+      this.connectivity.reportFailure(streamDeck.logger, `[buffer] refreshState failed: ${describeError(error)}`);
       if (forceRender || !this.lastState) {
         await this.setImage("offline");
       }
@@ -115,6 +125,7 @@ export class SaveClipAction extends SingletonAction<ClipSettings> {
   private client?: MuxlyveClient;
   private lastState?: MuxlyveState;
   private keyAction?: KeyAction<ClipSettings>;
+  private readonly connectivity = new ConnectivityLog();
 
   constructor() {
     super();
@@ -158,10 +169,11 @@ export class SaveClipAction extends SingletonAction<ClipSettings> {
 
     try {
       await client.saveClip(duration);
+      this.connectivity.reportSuccess(streamDeck.logger, "[clip] connection restored");
       await this.keyAction?.showOk();
       await this.flashSaved();
     } catch (error) {
-      streamDeck.logger.error(`saveClip failed: ${describeError(error)}`);
+      this.connectivity.reportFailure(streamDeck.logger, `[clip] saveClip failed: ${describeError(error)}`);
       await this.keyAction?.showAlert();
     }
   }
@@ -175,9 +187,10 @@ export class SaveClipAction extends SingletonAction<ClipSettings> {
     try {
       const state = await client.getState();
       this.lastState = state;
+      this.connectivity.reportSuccess(streamDeck.logger, "[clip] connection restored");
       await this.render(state);
     } catch (error) {
-      streamDeck.logger.error(`refreshState (clip) failed: ${describeError(error)}`);
+      this.connectivity.reportFailure(streamDeck.logger, `[clip] refreshState failed: ${describeError(error)}`);
       await this.setImage("offline");
     }
   }
@@ -203,6 +216,7 @@ export class ToggleFullRecordAction extends SingletonAction<NetworkSettings> {
   private client?: MuxlyveClient;
   private lastState?: MuxlyveState;
   private keyAction?: KeyAction<NetworkSettings>;
+  private readonly connectivity = new ConnectivityLog();
 
   constructor() {
     super();
@@ -250,10 +264,14 @@ export class ToggleFullRecordAction extends SingletonAction<NetworkSettings> {
         ? await client.stopFullRecording()
         : await client.startFullRecording();
       this.lastState = updated;
+      this.connectivity.reportSuccess(streamDeck.logger, "[fullrecord] connection restored");
       await this.render(updated);
       await this.keyAction?.showOk();
     } catch (error) {
-      streamDeck.logger.error(`toggleFullRecord failed: ${describeError(error)}`);
+      this.connectivity.reportFailure(
+        streamDeck.logger,
+        `[fullrecord] toggleFullRecord failed: ${describeError(error)}`,
+      );
       await this.keyAction?.showAlert();
       await this.setImage("offline");
     }
@@ -268,9 +286,13 @@ export class ToggleFullRecordAction extends SingletonAction<NetworkSettings> {
     try {
       const state = await client.getState();
       this.lastState = state;
+      this.connectivity.reportSuccess(streamDeck.logger, "[fullrecord] connection restored");
       await this.render(state);
     } catch (error) {
-      streamDeck.logger.error(`refreshState (fullrecord) failed: ${describeError(error)}`);
+      this.connectivity.reportFailure(
+        streamDeck.logger,
+        `[fullrecord] refreshState failed: ${describeError(error)}`,
+      );
       if (forceRender || !this.lastState) {
         await this.setImage("offline");
       }

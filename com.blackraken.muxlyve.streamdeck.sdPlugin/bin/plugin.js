@@ -9243,6 +9243,25 @@ function buildClient(settings) {
 function describeError(error) {
     return error instanceof Error ? error.message : String(error);
 }
+/**
+ * Logs connection failures only on the down/up transition, not on every
+ * failed poll — avoids flooding the plugin log while Muxlyve is closed.
+ */
+class ConnectivityLog {
+    isDown = false;
+    reportFailure(logger, message) {
+        if (!this.isDown) {
+            logger.error(message);
+            this.isDown = true;
+        }
+    }
+    reportSuccess(logger, message) {
+        if (this.isDown) {
+            logger.info(message);
+            this.isDown = false;
+        }
+    }
+}
 function normalizeDuration(value) {
     const parsed = Number.parseInt(String(value ?? "60"), 10);
     return parsed === 300 || parsed === 600 || parsed === 900 ? parsed : 60;
@@ -9252,6 +9271,7 @@ class BaseToggleDestinationAction extends SingletonAction {
     client;
     lastState;
     keyAction;
+    connectivity = new ConnectivityLog();
     constructor() {
         super();
         setInterval(() => {
@@ -9300,11 +9320,12 @@ class BaseToggleDestinationAction extends SingletonAction {
             }
             const updated = await client.toggleDestination(destination);
             this.lastState = updated;
+            this.connectivity.reportSuccess(streamDeck.logger, `[${platform}] connection restored`);
             await this.renderState(platform, updated);
             await this.showOk();
         }
         catch (error) {
-            streamDeck.logger.error(`[${platform}] togglePlatform failed: ${describeError(error)}`);
+            this.connectivity.reportFailure(streamDeck.logger, `[${platform}] togglePlatform failed: ${describeError(error)}`);
             await this.showAlert();
             await this.renderOfflineState(platform);
         }
@@ -9317,10 +9338,11 @@ class BaseToggleDestinationAction extends SingletonAction {
         try {
             const state = await client.getState();
             this.lastState = state;
+            this.connectivity.reportSuccess(streamDeck.logger, `[${this.defaultPlatform}] connection restored`);
             await this.renderState(this.defaultPlatform, state);
         }
         catch (error) {
-            streamDeck.logger.error(`[${this.defaultPlatform}] refreshState failed: ${describeError(error)}`);
+            this.connectivity.reportFailure(streamDeck.logger, `[${this.defaultPlatform}] refreshState failed: ${describeError(error)}`);
             if (forceRender || !this.lastState) {
                 await this.renderOfflineState(this.defaultPlatform);
             }
@@ -9483,6 +9505,7 @@ let ToggleBufferAction = (() => {
         client;
         lastState;
         keyAction;
+        connectivity = new ConnectivityLog();
         constructor() {
             super();
             setInterval(() => {
@@ -9521,11 +9544,12 @@ let ToggleBufferAction = (() => {
                 const current = this.lastState ?? (await client.getState());
                 const updated = current.recorder.active ? await client.stopRecording() : await client.startRecording(duration);
                 this.lastState = updated;
+                this.connectivity.reportSuccess(streamDeck.logger, "[buffer] connection restored");
                 await this.render(updated);
                 await this.keyAction?.showOk();
             }
             catch (error) {
-                streamDeck.logger.error(`toggleBuffer failed: ${describeError(error)}`);
+                this.connectivity.reportFailure(streamDeck.logger, `[buffer] toggleBuffer failed: ${describeError(error)}`);
                 await this.keyAction?.showAlert();
                 await this.setImage("offline");
             }
@@ -9538,10 +9562,11 @@ let ToggleBufferAction = (() => {
             try {
                 const state = await client.getState();
                 this.lastState = state;
+                this.connectivity.reportSuccess(streamDeck.logger, "[buffer] connection restored");
                 await this.render(state);
             }
             catch (error) {
-                streamDeck.logger.error(`refreshState (buffer) failed: ${describeError(error)}`);
+                this.connectivity.reportFailure(streamDeck.logger, `[buffer] refreshState failed: ${describeError(error)}`);
                 if (forceRender || !this.lastState) {
                     await this.setImage("offline");
                 }
@@ -9578,6 +9603,7 @@ let SaveClipAction = (() => {
         client;
         lastState;
         keyAction;
+        connectivity = new ConnectivityLog();
         constructor() {
             super();
             setInterval(() => {
@@ -9614,11 +9640,12 @@ let SaveClipAction = (() => {
             }
             try {
                 await client.saveClip(duration);
+                this.connectivity.reportSuccess(streamDeck.logger, "[clip] connection restored");
                 await this.keyAction?.showOk();
                 await this.flashSaved();
             }
             catch (error) {
-                streamDeck.logger.error(`saveClip failed: ${describeError(error)}`);
+                this.connectivity.reportFailure(streamDeck.logger, `[clip] saveClip failed: ${describeError(error)}`);
                 await this.keyAction?.showAlert();
             }
         }
@@ -9630,10 +9657,11 @@ let SaveClipAction = (() => {
             try {
                 const state = await client.getState();
                 this.lastState = state;
+                this.connectivity.reportSuccess(streamDeck.logger, "[clip] connection restored");
                 await this.render(state);
             }
             catch (error) {
-                streamDeck.logger.error(`refreshState (clip) failed: ${describeError(error)}`);
+                this.connectivity.reportFailure(streamDeck.logger, `[clip] refreshState failed: ${describeError(error)}`);
                 await this.setImage("offline");
             }
         }
@@ -9670,6 +9698,7 @@ let ToggleFullRecordAction = (() => {
         client;
         lastState;
         keyAction;
+        connectivity = new ConnectivityLog();
         constructor() {
             super();
             setInterval(() => {
@@ -9710,11 +9739,12 @@ let ToggleFullRecordAction = (() => {
                     ? await client.stopFullRecording()
                     : await client.startFullRecording();
                 this.lastState = updated;
+                this.connectivity.reportSuccess(streamDeck.logger, "[fullrecord] connection restored");
                 await this.render(updated);
                 await this.keyAction?.showOk();
             }
             catch (error) {
-                streamDeck.logger.error(`toggleFullRecord failed: ${describeError(error)}`);
+                this.connectivity.reportFailure(streamDeck.logger, `[fullrecord] toggleFullRecord failed: ${describeError(error)}`);
                 await this.keyAction?.showAlert();
                 await this.setImage("offline");
             }
@@ -9727,10 +9757,11 @@ let ToggleFullRecordAction = (() => {
             try {
                 const state = await client.getState();
                 this.lastState = state;
+                this.connectivity.reportSuccess(streamDeck.logger, "[fullrecord] connection restored");
                 await this.render(state);
             }
             catch (error) {
-                streamDeck.logger.error(`refreshState (fullrecord) failed: ${describeError(error)}`);
+                this.connectivity.reportFailure(streamDeck.logger, `[fullrecord] refreshState failed: ${describeError(error)}`);
                 if (forceRender || !this.lastState) {
                     await this.setImage("offline");
                 }

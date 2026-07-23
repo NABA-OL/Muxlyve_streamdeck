@@ -19,6 +19,33 @@ export function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+interface Logger {
+  error(message: string): void;
+  info(message: string): void;
+}
+
+/**
+ * Logs connection failures only on the down/up transition, not on every
+ * failed poll — avoids flooding the plugin log while Muxlyve is closed.
+ */
+export class ConnectivityLog {
+  private isDown = false;
+
+  reportFailure(logger: Logger, message: string): void {
+    if (!this.isDown) {
+      logger.error(message);
+      this.isDown = true;
+    }
+  }
+
+  reportSuccess(logger: Logger, message: string): void {
+    if (this.isDown) {
+      logger.info(message);
+      this.isDown = false;
+    }
+  }
+}
+
 export type RecorderDuration = 60 | 300 | 600 | 900;
 
 export function normalizeDuration(value: unknown): RecorderDuration {
