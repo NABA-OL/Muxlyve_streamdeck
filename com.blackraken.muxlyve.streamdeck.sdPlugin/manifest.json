@@ -1,9 +1,9 @@
 {
     "Name": "Muxlyve",
     "UUID": "com.blackraken.muxlyve.streamdeck",
-    "Version": "2.1.1.0",
+    "Version": "2.1.1.1",
     "Author": "BlacKraken Solutions",
-    "URL": "https://blackraken.vercel.app",
+    "URL": "https://muxlyve.com",
     "Description": "Controla tus retransmisiones de Muxlyve desde el Stream Deck: enciende o apaga Twitch, YouTube, Kick y TikTok con un botón.",
     "Category": "Muxlyve",
     "CategoryIcon": "imgs/plugin/categoryIcon",
