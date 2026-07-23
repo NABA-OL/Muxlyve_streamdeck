@@ -9201,8 +9201,8 @@ class MuxlyveClient {
     async stopRecording() {
         return this.request("POST", "/api/record/stop");
     }
-    async saveClip(duration) {
-        return this.request("POST", "/api/record/save", { duration });
+    async saveClip() {
+        return this.request("POST", "/api/record/save", {});
     }
     async startFullRecording() {
         return this.request("POST", "/api/fullrecord/start", {});
@@ -9542,7 +9542,7 @@ let ToggleBufferAction = (() => {
             }
             try {
                 const current = this.lastState ?? (await client.getState());
-                const updated = current.recorder.active ? await client.stopRecording() : await client.startRecording(duration);
+                const updated = current.recorder.armed ? await client.stopRecording() : await client.startRecording(duration);
                 this.lastState = updated;
                 this.connectivity.reportSuccess(streamDeck.logger, "[buffer] connection restored");
                 await this.render(updated);
@@ -9573,11 +9573,7 @@ let ToggleBufferAction = (() => {
             }
         }
         async render(state) {
-            if (!state.live) {
-                await this.setImage("disabled");
-                return;
-            }
-            await this.setImage(state.recorder.active ? "on" : "off");
+            await this.setImage(state.recorder.armed ? "on" : "off");
         }
         async setImage(variant) {
             await this.keyAction?.setImage(`imgs/actions/buffer/${variant}.png`);
@@ -9626,20 +9622,20 @@ let SaveClipAction = (() => {
         }
         onKeyDown(ev) {
             this.keyAction = ev.action;
-            void this.saveClip(normalizeDuration(ev.payload.settings?.duration));
+            void this.saveClip();
         }
         applySettings(settings) {
             this.client = buildClient(settings);
             void this.refreshState();
         }
-        async saveClip(duration) {
+        async saveClip() {
             const client = this.client;
-            if (!client || !this.lastState?.recorder.active) {
+            if (!client) {
                 await this.keyAction?.showAlert();
                 return;
             }
             try {
-                await client.saveClip(duration);
+                await client.saveClip();
                 this.connectivity.reportSuccess(streamDeck.logger, "[clip] connection restored");
                 await this.keyAction?.showOk();
                 await this.flashSaved();
@@ -9666,7 +9662,7 @@ let SaveClipAction = (() => {
             }
         }
         async render(state) {
-            await this.setImage(state.recorder.active ? "idle" : "disabled");
+            await this.setImage(state.recorder.armed ? "idle" : "disabled");
         }
         async flashSaved() {
             await this.setImage("on");
@@ -9735,7 +9731,7 @@ let ToggleFullRecordAction = (() => {
             }
             try {
                 const current = this.lastState ?? (await client.getState());
-                const updated = current.fullRecorder.active
+                const updated = current.fullRecorder.armed
                     ? await client.stopFullRecording()
                     : await client.startFullRecording();
                 this.lastState = updated;
@@ -9768,7 +9764,7 @@ let ToggleFullRecordAction = (() => {
             }
         }
         async render(state) {
-            await this.setImage(state.fullRecorder.active ? "on" : "off");
+            await this.setImage(state.fullRecorder.armed ? "on" : "off");
         }
         async setImage(variant) {
             await this.keyAction?.setImage(`imgs/actions/fullrecord/${variant}.png`);

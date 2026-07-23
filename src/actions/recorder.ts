@@ -71,7 +71,7 @@ export class ToggleBufferAction extends SingletonAction<BufferSettings> {
 
     try {
       const current = this.lastState ?? (await client.getState());
-      const updated = current.recorder.active ? await client.stopRecording() : await client.startRecording(duration);
+      const updated = current.recorder.armed ? await client.stopRecording() : await client.startRecording(duration);
       this.lastState = updated;
       this.connectivity.reportSuccess(streamDeck.logger, "[buffer] connection restored");
       await this.render(updated);
@@ -103,12 +103,7 @@ export class ToggleBufferAction extends SingletonAction<BufferSettings> {
   }
 
   private async render(state: MuxlyveState): Promise<void> {
-    if (!state.live) {
-      await this.setImage("disabled");
-      return;
-    }
-
-    await this.setImage(state.recorder.active ? "on" : "off");
+    await this.setImage(state.recorder.armed ? "on" : "off");
   }
 
   private async setImage(variant: string): Promise<void> {
@@ -116,9 +111,7 @@ export class ToggleBufferAction extends SingletonAction<BufferSettings> {
   }
 }
 
-type ClipSettings = NetworkSettings & {
-  duration?: string;
-};
+type ClipSettings = NetworkSettings;
 
 @action({ UUID: "com.blackraken.muxlyve.streamdeck.save.clip" })
 export class SaveClipAction extends SingletonAction<ClipSettings> {
@@ -152,7 +145,7 @@ export class SaveClipAction extends SingletonAction<ClipSettings> {
 
   onKeyDown(ev: KeyDownEvent<ClipSettings>): void | Promise<void> {
     this.keyAction = ev.action;
-    void this.saveClip(normalizeDuration(ev.payload.settings?.duration));
+    void this.saveClip();
   }
 
   private applySettings(settings: ClipSettings): void {
@@ -160,15 +153,15 @@ export class SaveClipAction extends SingletonAction<ClipSettings> {
     void this.refreshState();
   }
 
-  private async saveClip(duration: RecorderDuration): Promise<void> {
+  private async saveClip(): Promise<void> {
     const client = this.client;
-    if (!client || !this.lastState?.recorder.active) {
+    if (!client) {
       await this.keyAction?.showAlert();
       return;
     }
 
     try {
-      await client.saveClip(duration);
+      await client.saveClip();
       this.connectivity.reportSuccess(streamDeck.logger, "[clip] connection restored");
       await this.keyAction?.showOk();
       await this.flashSaved();
@@ -196,7 +189,7 @@ export class SaveClipAction extends SingletonAction<ClipSettings> {
   }
 
   private async render(state: MuxlyveState): Promise<void> {
-    await this.setImage(state.recorder.active ? "idle" : "disabled");
+    await this.setImage(state.recorder.armed ? "idle" : "disabled");
   }
 
   private async flashSaved(): Promise<void> {
@@ -260,7 +253,7 @@ export class ToggleFullRecordAction extends SingletonAction<NetworkSettings> {
 
     try {
       const current = this.lastState ?? (await client.getState());
-      const updated = current.fullRecorder.active
+      const updated = current.fullRecorder.armed
         ? await client.stopFullRecording()
         : await client.startFullRecording();
       this.lastState = updated;
@@ -300,7 +293,7 @@ export class ToggleFullRecordAction extends SingletonAction<NetworkSettings> {
   }
 
   private async render(state: MuxlyveState): Promise<void> {
-    await this.setImage(state.fullRecorder.active ? "on" : "off");
+    await this.setImage(state.fullRecorder.armed ? "on" : "off");
   }
 
   private async setImage(variant: string): Promise<void> {
