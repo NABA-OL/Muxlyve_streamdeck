@@ -1,6 +1,6 @@
 {
     "name": "muxlyve-streamdeck",
-    "version": "2.2.2",
+    "version": "2.1.1",
     "private": true,
     "type": "module",
     "scripts": {
