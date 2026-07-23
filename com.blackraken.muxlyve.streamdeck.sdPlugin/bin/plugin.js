@@ -9321,6 +9321,8 @@ class BaseToggleDestinationAction extends SingletonAction {
             const updated = await client.toggleDestination(destination);
             this.lastState = updated;
             this.connectivity.reportSuccess(streamDeck.logger, `[${platform}] connection restored`);
+            const nowEnabled = updated.destinations.find((item) => this.matchesPlatform(item.name, platform))?.enabled;
+            streamDeck.logger.info(`[${platform}] toggled OK -> enabled=${nowEnabled}`);
             await this.renderState(platform, updated);
             await this.showOk();
         }
@@ -9545,6 +9547,7 @@ let ToggleBufferAction = (() => {
                 const updated = current.recorder.armed ? await client.stopRecording() : await client.startRecording(duration);
                 this.lastState = updated;
                 this.connectivity.reportSuccess(streamDeck.logger, "[buffer] connection restored");
+                streamDeck.logger.info(`[buffer] toggled OK -> armed=${updated.recorder.armed}`);
                 await this.render(updated);
                 await this.keyAction?.showOk();
             }
@@ -9635,8 +9638,9 @@ let SaveClipAction = (() => {
                 return;
             }
             try {
-                await client.saveClip();
+                const result = await client.saveClip();
                 this.connectivity.reportSuccess(streamDeck.logger, "[clip] connection restored");
+                streamDeck.logger.info(`[clip] saved OK -> ${result.path}`);
                 await this.keyAction?.showOk();
                 await this.flashSaved();
             }
@@ -9736,6 +9740,7 @@ let ToggleFullRecordAction = (() => {
                     : await client.startFullRecording();
                 this.lastState = updated;
                 this.connectivity.reportSuccess(streamDeck.logger, "[fullrecord] connection restored");
+                streamDeck.logger.info(`[fullrecord] toggled OK -> armed=${updated.fullRecorder.armed}`);
                 await this.render(updated);
                 await this.keyAction?.showOk();
             }

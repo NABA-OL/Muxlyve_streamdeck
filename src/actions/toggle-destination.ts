@@ -77,6 +77,8 @@ abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestina
       const updated = await client.toggleDestination(destination);
       this.lastState = updated;
       this.connectivity.reportSuccess(streamDeck.logger, `[${platform}] connection restored`);
+      const nowEnabled = updated.destinations.find((item) => this.matchesPlatform(item.name, platform))?.enabled;
+      streamDeck.logger.info(`[${platform}] toggled OK -> enabled=${nowEnabled}`);
       await this.renderState(platform, updated);
       await this.showOk();
     } catch (error) {

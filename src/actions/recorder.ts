@@ -74,6 +74,7 @@ export class ToggleBufferAction extends SingletonAction<BufferSettings> {
       const updated = current.recorder.armed ? await client.stopRecording() : await client.startRecording(duration);
       this.lastState = updated;
       this.connectivity.reportSuccess(streamDeck.logger, "[buffer] connection restored");
+      streamDeck.logger.info(`[buffer] toggled OK -> armed=${updated.recorder.armed}`);
       await this.render(updated);
       await this.keyAction?.showOk();
     } catch (error) {
@@ -161,8 +162,9 @@ export class SaveClipAction extends SingletonAction<ClipSettings> {
     }
 
     try {
-      await client.saveClip();
+      const result = await client.saveClip();
       this.connectivity.reportSuccess(streamDeck.logger, "[clip] connection restored");
+      streamDeck.logger.info(`[clip] saved OK -> ${result.path}`);
       await this.keyAction?.showOk();
       await this.flashSaved();
     } catch (error) {
@@ -258,6 +260,7 @@ export class ToggleFullRecordAction extends SingletonAction<NetworkSettings> {
         : await client.startFullRecording();
       this.lastState = updated;
       this.connectivity.reportSuccess(streamDeck.logger, "[fullrecord] connection restored");
+      streamDeck.logger.info(`[fullrecord] toggled OK -> armed=${updated.fullRecorder.armed}`);
       await this.render(updated);
       await this.keyAction?.showOk();
     } catch (error) {
