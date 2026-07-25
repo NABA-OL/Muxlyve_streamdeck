@@ -111,6 +111,18 @@
                     "Image": "imgs/actions/fullrecord/off"
                 }
             ]
+        },
+        {
+            "Name": "Perfil",
+            "UUID": "com.blackraken.muxlyve.streamdeck.preset",
+            "Icon": "imgs/actions/preset/icon",
+            "Tooltip": "Activar/desactivar un perfil de destinos",
+            "PropertyInspectorPath": "ui/property-inspector-preset.html",
+            "States": [
+                {
+                    "Image": "imgs/actions/preset/unassigned"
+                }
+            ]
         }
     ]
 }

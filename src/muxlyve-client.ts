@@ -41,6 +41,17 @@ export interface SaveClipResult {
   path: string;
 }
 
+export interface PresetInfo {
+  name: string;
+  enabled: string[];
+  active: boolean;
+  [key: string]: string | string[] | boolean;
+}
+
+export interface PresetsResponse {
+  presets: PresetInfo[];
+}
+
 export class MuxlyveClient {
   constructor(
     private readonly port: number = 19080,
@@ -83,6 +94,19 @@ export class MuxlyveClient {
 
   async stopFullRecording(): Promise<MuxlyveState> {
     return this.request<MuxlyveState>("POST", "/api/fullrecord/stop");
+  }
+
+  async getPresets(): Promise<PresetInfo[]> {
+    const response = await this.request<PresetsResponse>("GET", "/api/presets");
+    return response.presets;
+  }
+
+  async applyPreset(name: string): Promise<MuxlyveState> {
+    return this.request<MuxlyveState>("POST", "/api/presets/apply", { name });
+  }
+
+  async deactivatePreset(name: string): Promise<MuxlyveState> {
+    return this.request<MuxlyveState>("POST", "/api/presets/deactivate", { name });
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {

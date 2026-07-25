@@ -9210,6 +9210,16 @@ class MuxlyveClient {
     async stopFullRecording() {
         return this.request("POST", "/api/fullrecord/stop");
     }
+    async getPresets() {
+        const response = await this.request("GET", "/api/presets");
+        return response.presets;
+    }
+    async applyPreset(name) {
+        return this.request("POST", "/api/presets/apply", { name });
+    }
+    async deactivatePreset(name) {
+        return this.request("POST", "/api/presets/deactivate", { name });
+    }
     async request(method, path, body) {
         const headers = { ...this.getAuthHeader() };
         if (body !== undefined) {
@@ -9778,6 +9788,159 @@ let ToggleFullRecordAction = (() => {
     return _classThis;
 })();
 
+const POLL_INTERVAL_MS = 2500;
+let PresetAction = (() => {
+    let _classDecorators = [action({ UUID: "com.blackraken.muxlyve.streamdeck.preset" })];
+    let _classDescriptor;
+    let _classExtraInitializers = [];
+    let _classThis;
+    let _classSuper = SingletonAction;
+    (class extends _classSuper {
+        static { _classThis = this; }
+        static {
+            const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
+            __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
+            _classThis = _classDescriptor.value;
+            if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
+            __runInitializers(_classThis, _classExtraInitializers);
+        }
+        // Estado por instancia de botón (ev.action.id) — NUNCA como campo de la clase.
+        // Esta clase respalda todos los botones "Perfil" a la vez; si el estado runtime
+        // viviera en `this.algo`, dos botones de perfil distintos se pisarían entre sí.
+        instances = new Map();
+        onWillAppear(ev) {
+            if (!ev.action.isKey()) {
+                return;
+            }
+            this.setupInstance(ev.action, ev.payload.settings ?? {});
+        }
+        onWillDisappear(ev) {
+            const instance = this.instances.get(ev.action.id);
+            if (instance) {
+                clearInterval(instance.pollTimer);
+            }
+            this.instances.delete(ev.action.id);
+        }
+        onDidReceiveSettings(ev) {
+            if (!ev.action.isKey()) {
+                return;
+            }
+            this.setupInstance(ev.action, ev.payload.settings ?? {});
+        }
+        onKeyDown(ev) {
+            if (!ev.action.isKey()) {
+                return;
+            }
+            void this.togglePreset(ev.action, ev.payload.settings ?? {});
+        }
+        onSendToPlugin(ev) {
+            if (!ev.action.isKey()) {
+                return;
+            }
+            const payload = ev.payload;
+            if (payload?.cmd === "listPresets") {
+                void this.sendPresetList(ev.action);
+            }
+        }
+        setupInstance(keyAction, settings) {
+            const id = keyAction.id;
+            const previous = this.instances.get(id);
+            if (previous) {
+                clearInterval(previous.pollTimer);
+            }
+            const instance = {
+                client: buildClient(settings),
+                keyAction,
+                connectivity: previous?.connectivity ?? new ConnectivityLog(),
+                lastPresets: previous?.lastPresets,
+                pollTimer: setInterval(() => void this.poll(id), POLL_INTERVAL_MS),
+            };
+            this.instances.set(id, instance);
+            void this.poll(id, true);
+        }
+        async poll(id, forceRender = false) {
+            const instance = this.instances.get(id);
+            if (!instance) {
+                return;
+            }
+            try {
+                const presets = await instance.client.getPresets();
+                instance.lastPresets = presets;
+                instance.connectivity.reportSuccess(streamDeck.logger, `[preset:${id}] connection restored`);
+                await this.render(instance);
+            }
+            catch (error) {
+                instance.connectivity.reportFailure(streamDeck.logger, `[preset:${id}] poll failed: ${describeError(error)}`);
+                if (forceRender || !instance.lastPresets) {
+                    await instance.keyAction.setImage("imgs/actions/preset/offline.png");
+                }
+            }
+        }
+        async togglePreset(keyAction, settings) {
+            const instance = this.instances.get(keyAction.id);
+            if (!instance) {
+                return;
+            }
+            const presetName = (settings.presetName ?? "").trim();
+            if (!presetName) {
+                await keyAction.showAlert();
+                return;
+            }
+            const known = instance.lastPresets?.find((preset) => preset.name === presetName);
+            if (!known) {
+                await keyAction.showAlert();
+                return;
+            }
+            try {
+                if (known.active) {
+                    await instance.client.deactivatePreset(presetName);
+                }
+                else {
+                    await instance.client.applyPreset(presetName);
+                }
+                streamDeck.logger.info(`[preset:${keyAction.id}] toggled OK -> ${presetName} active=${!known.active}`);
+                await keyAction.showOk();
+                await this.poll(keyAction.id, true);
+            }
+            catch (error) {
+                streamDeck.logger.error(`[preset:${keyAction.id}] toggle failed: ${describeError(error)}`);
+                await keyAction.showAlert();
+            }
+        }
+        async sendPresetList(keyAction) {
+            const instance = this.instances.get(keyAction.id);
+            if (!instance) {
+                return;
+            }
+            try {
+                const presets = await instance.client.getPresets();
+                instance.lastPresets = presets;
+                await streamDeck.ui.sendToPropertyInspector({ presets });
+            }
+            catch (error) {
+                await streamDeck.ui.sendToPropertyInspector({ presets: [], error: describeError(error) });
+            }
+        }
+        async render(instance) {
+            const settings = await instance.keyAction.getSettings();
+            const presetName = (settings.presetName ?? "").trim();
+            if (!presetName) {
+                await instance.keyAction.setTitle("Elegir\nperfil");
+                await instance.keyAction.setImage("imgs/actions/preset/unassigned.png");
+                return;
+            }
+            await instance.keyAction.setTitle(presetName);
+            const preset = instance.lastPresets?.find((item) => item.name === presetName);
+            if (!preset) {
+                await instance.keyAction.setImage("imgs/actions/preset/deleted.png");
+                return;
+            }
+            await instance.keyAction.setImage(preset.active ? "imgs/actions/preset/on.png" : "imgs/actions/preset/off.png");
+        }
+    });
+    return _classThis;
+})();
+
 streamDeck.logger.info("Muxlyve Stream Deck plugin started");
 streamDeck.actions.registerAction(new TwitchToggleDestinationAction());
 streamDeck.actions.registerAction(new YoutubeToggleDestinationAction());
@@ -9786,5 +9949,6 @@ streamDeck.actions.registerAction(new TikTokToggleDestinationAction());
 streamDeck.actions.registerAction(new ToggleBufferAction());
 streamDeck.actions.registerAction(new SaveClipAction());
 streamDeck.actions.registerAction(new ToggleFullRecordAction());
+streamDeck.actions.registerAction(new PresetAction());
 await streamDeck.connect();
 //# sourceMappingURL=plugin.js.map
