@@ -35,9 +35,10 @@
 
     <label for="duration" id="lbl-duration">Buffer Duration</label>
     <select id="duration">
-        <option value="30" id="opt-30">30 seconds</option>
-        <option value="60" id="opt-60" selected>60 seconds</option>
-        <option value="120" id="opt-120">120 seconds</option>
+        <option value="60" id="opt-60" selected>1 minute</option>
+        <option value="300" id="opt-300">5 minutes</option>
+        <option value="600" id="opt-600">10 minutes</option>
+        <option value="900" id="opt-900">15 minutes</option>
     </select>
     <div class="hint" id="hint-duration">How much recording time the buffer keeps in memory.</div>
 
@@ -56,9 +57,10 @@
                 lblToken: "Token de Muxlyve",
                 hintToken: "Cópialo desde Muxlyve → Ajustes → Conexión Stream Deck. Requerido cuando 'Allow LAN Panel' está activo.",
                 lblDuration: "Duración del buffer",
-                opt30: "30 segundos",
-                opt60: "60 segundos",
-                opt120: "120 segundos",
+                opt60: "1 minuto",
+                opt300: "5 minutos",
+                opt600: "10 minutos",
+                opt900: "15 minutos",
                 hintDuration: "Cuánto tiempo de grabación mantiene el buffer en memoria."
             }
         };
@@ -99,9 +101,10 @@
                 document.getElementById('lbl-token').innerText = t.lblToken;
                 document.getElementById('hint-token').innerText = t.hintToken;
                 document.getElementById('lbl-duration').innerText = t.lblDuration;
-                document.getElementById('opt-30').innerText = t.opt30;
                 document.getElementById('opt-60').innerText = t.opt60;
-                document.getElementById('opt-120').innerText = t.opt120;
+                document.getElementById('opt-300').innerText = t.opt300;
+                document.getElementById('opt-600').innerText = t.opt600;
+                document.getElementById('opt-900').innerText = t.opt900;
                 document.getElementById('hint-duration').innerText = t.hintDuration;
             }
             // ----------------------------

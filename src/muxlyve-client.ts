@@ -12,7 +12,14 @@ export interface DestinationState {
 
 export interface RecorderState {
   active: boolean;
+  armed: boolean;
   duration: number;
+}
+
+export interface FullRecorderState {
+  active: boolean;
+  armed: boolean;
+  startedAt: number | null;
 }
 
 export interface MuxlyveState {
@@ -20,6 +27,7 @@ export interface MuxlyveState {
   uptime: number;
   destinations: DestinationState[];
   recorder: RecorderState;
+  fullRecorder: FullRecorderState;
 }
 
 export interface ToggleDestinationPayload {
@@ -31,6 +39,17 @@ export interface ToggleDestinationPayload {
 export interface SaveClipResult {
   ok: boolean;
   path: string;
+}
+
+export interface PresetInfo {
+  name: string;
+  enabled: string[];
+  active: boolean;
+  [key: string]: string | string[] | boolean;
+}
+
+export interface PresetsResponse {
+  presets: PresetInfo[];
 }
 
 export class MuxlyveClient {
@@ -65,8 +84,29 @@ export class MuxlyveClient {
     return this.request<MuxlyveState>("POST", "/api/record/stop");
   }
 
-  async saveClip(duration: number): Promise<SaveClipResult> {
-    return this.request<SaveClipResult>("POST", "/api/record/save", { duration });
+  async saveClip(): Promise<SaveClipResult> {
+    return this.request<SaveClipResult>("POST", "/api/record/save", {});
+  }
+
+  async startFullRecording(): Promise<MuxlyveState> {
+    return this.request<MuxlyveState>("POST", "/api/fullrecord/start", {});
+  }
+
+  async stopFullRecording(): Promise<MuxlyveState> {
+    return this.request<MuxlyveState>("POST", "/api/fullrecord/stop");
+  }
+
+  async getPresets(): Promise<PresetInfo[]> {
+    const response = await this.request<PresetsResponse>("GET", "/api/presets");
+    return response.presets;
+  }
+
+  async applyPreset(name: string): Promise<MuxlyveState> {
+    return this.request<MuxlyveState>("POST", "/api/presets/apply", { name });
+  }
+
+  async deactivatePreset(name: string): Promise<MuxlyveState> {
+    return this.request<MuxlyveState>("POST", "/api/presets/deactivate", { name });
   }
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {

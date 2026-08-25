@@ -12,12 +12,11 @@
             padding: 12px;
         }
         label { display: block; margin-top: 8px; font-size: 12px; color: #8b949e; }
-        select, input {
+        input {
             width: 100%; margin-top: 4px; padding: 6px;
             border-radius: 6px; border: 1px solid #2a3140;
             background: #161b22; color: #e6edf3; box-sizing: border-box;
         }
-        select { cursor: pointer; }
         .hint { font-size: 11px; color: #8b949e; margin-top: 6px; }
     </style>
 </head>
@@ -32,20 +31,12 @@
     <label for="panelToken" id="lbl-token">Muxlyve Token</label>
     <input id="panelToken" type="password" placeholder="Only required if Muxlyve runs on another machine" />
     <div class="hint" id="hint-token">Copy it from Muxlyve → Settings → Stream Deck Connection. Required when "Allow LAN Panel" is active.</div>
-
-    <label for="duration" id="lbl-duration">Clip Duration</label>
-    <select id="duration">
-        <option value="30" id="opt-30">30 seconds</option>
-        <option value="60" id="opt-60" selected>60 seconds</option>
-        <option value="120" id="opt-120">120 seconds</option>
-    </select>
-    <div class="hint" id="hint-duration">How many seconds backwards to save as a clip.</div>
+    <div class="hint">Clip length uses the duration already configured in Muxlyve.</div>
 
     <script>
         const panelHost = document.getElementById('panelHost');
         const panelPort = document.getElementById('panelPort');
         const panelToken = document.getElementById('panelToken');
-        const duration = document.getElementById('duration');
         let websocket, uuid;
 
         const locales = {
@@ -54,12 +45,7 @@
                 hintHost: "IP o hostname de la máquina que corre Muxlyve.",
                 lblPort: "Puerto de Muxlyve",
                 lblToken: "Token de Muxlyve",
-                hintToken: "Cópialo desde Muxlyve → Ajustes → Conexión Stream Deck. Requerido cuando 'Allow LAN Panel' está activo.",
-                lblDuration: "Duración del clip",
-                opt30: "30 segundos",
-                opt60: "60 segundos",
-                opt120: "120 segundos",
-                hintDuration: "Cuántos segundos hacia atrás guardar como clip."
+                hintToken: "Cópialo desde Muxlyve → Ajustes → Conexión Stream Deck. Requerido cuando 'Allow LAN Panel' está activo."
             }
         };
 
@@ -67,30 +53,27 @@
             if (settings?.panelHost) panelHost.value = settings.panelHost;
             if (settings?.panelPort) panelPort.value = settings.panelPort;
             if (settings?.panelToken) panelToken.value = settings.panelToken;
-            if (settings?.duration) duration.value = settings.duration;
         }
 
         function save() {
             if (!websocket || websocket.readyState !== WebSocket.OPEN) return;
             websocket.send(JSON.stringify({
                 event: 'setSettings', context: uuid,
-                payload: { panelHost: panelHost.value, panelPort: panelPort.value, panelToken: panelToken.value, duration: duration.value },
+                payload: { panelHost: panelHost.value, panelPort: panelPort.value, panelToken: panelToken.value },
             }));
         }
 
         panelHost.addEventListener('input', save);
         panelPort.addEventListener('input', save);
         panelToken.addEventListener('input', save);
-        duration.addEventListener('change', save);
 
         function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
             uuid = inUUID;
             const actionInfo = JSON.parse(inActionInfo);
-            
-            // --- LÓGICA DE TRADUCCIÓN ---
+
             const info = JSON.parse(inInfo);
             const appLanguage = info.application.language;
-            
+
             if (appLanguage === 'es' && locales.es) {
                 const t = locales.es;
                 document.getElementById('lbl-host').innerText = t.lblHost;
@@ -98,13 +81,7 @@
                 document.getElementById('lbl-port').innerText = t.lblPort;
                 document.getElementById('lbl-token').innerText = t.lblToken;
                 document.getElementById('hint-token').innerText = t.hintToken;
-                document.getElementById('lbl-duration').innerText = t.lblDuration;
-                document.getElementById('opt-30').innerText = t.opt30;
-                document.getElementById('opt-60').innerText = t.opt60;
-                document.getElementById('opt-120').innerText = t.opt120;
-                document.getElementById('hint-duration').innerText = t.hintDuration;
             }
-            // ----------------------------
 
             websocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
             websocket.onopen = () => {

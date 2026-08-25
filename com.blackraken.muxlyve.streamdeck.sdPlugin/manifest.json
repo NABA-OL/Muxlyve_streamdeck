@@ -1,9 +1,9 @@
 {
     "Name": "Muxlyve",
     "UUID": "com.blackraken.muxlyve.streamdeck",
-    "Version": "2.2.2.0",
+    "Version": "2.2.1.0",
     "Author": "BlacKraken Solutions",
-    "URL": "https://blackraken.vercel.app",
+    "URL": "https://muxlyve.com",
     "Description": "Controla tus retransmisiones de Muxlyve desde el Stream Deck: enciende o apaga Twitch, YouTube, Kick y TikTok con un botón.",
     "Category": "Muxlyve",
     "CategoryIcon": "imgs/plugin/categoryIcon",
@@ -97,6 +97,30 @@
             "States": [
                 {
                     "Image": "imgs/actions/clip/idle"
+                }
+            ]
+        },
+        {
+            "Name": "Grabación completa",
+            "UUID": "com.blackraken.muxlyve.streamdeck.toggle.fullrecord",
+            "Icon": "imgs/actions/fullrecord/icon",
+            "Tooltip": "Activar/desactivar grabación completa",
+            "PropertyInspectorPath": "ui/property-inspector-fullrecord.html",
+            "States": [
+                {
+                    "Image": "imgs/actions/fullrecord/off"
+                }
+            ]
+        },
+        {
+            "Name": "Perfil",
+            "UUID": "com.blackraken.muxlyve.streamdeck.preset",
+            "Icon": "imgs/actions/preset/icon",
+            "Tooltip": "Activar/desactivar un perfil de destinos",
+            "PropertyInspectorPath": "ui/property-inspector-preset.html",
+            "States": [
+                {
+                    "Image": "imgs/actions/preset/unassigned"
                 }
             ]
         }
