@@ -1,3 +1,11 @@
+/*
+ * Propiedad de BlacKraken Solutions
+ * Desarrollado por: NABAOL
+ * Fecha de creación: 2026-10-10
+ * Correo: nabaol.dev@gmail.com
+ * Copyright (c) 2026 BlacKraken Solutions. Todos los derechos reservados.
+ */
+import streamDeck from "@elgato/streamdeck";
 import type { JsonValue } from "@elgato/utils";
 import { MuxlyveClient } from "../muxlyve-client.js";
 
@@ -8,9 +16,24 @@ export interface NetworkSettings {
   [key: string]: JsonValue;
 }
 
+const DEFAULT_HOST = "127.0.0.1";
+const VALID_HOST = /^[A-Za-z0-9.-]+$/;
+
+function resolveHost(rawHost: string | undefined): string {
+  const host = (rawHost ?? "").trim();
+  if (!host) {
+    return DEFAULT_HOST;
+  }
+  if (!VALID_HOST.test(host)) {
+    streamDeck.logger.warn(`panelHost inválido, se usa ${DEFAULT_HOST}`);
+    return DEFAULT_HOST;
+  }
+  return host;
+}
+
 export function buildClient(settings: NetworkSettings): MuxlyveClient {
   const port = Number.parseInt(settings.panelPort ?? "19080", 10) || 19080;
-  const host = (settings.panelHost ?? "").trim() || "127.0.0.1";
+  const host = resolveHost(settings.panelHost);
   const token = (settings.panelToken ?? "").trim() || undefined;
   return new MuxlyveClient(port, host, token);
 }

@@ -9244,9 +9244,29 @@ class MuxlyveClient {
     }
 }
 
+/*
+ * Propiedad de BlacKraken Solutions
+ * Desarrollado por: NABAOL
+ * Fecha de creación: 2026-10-10
+ * Correo: nabaol.dev@gmail.com
+ * Copyright (c) 2026 BlacKraken Solutions. Todos los derechos reservados.
+ */
+const DEFAULT_HOST = "127.0.0.1";
+const VALID_HOST = /^[A-Za-z0-9.-]+$/;
+function resolveHost(rawHost) {
+    const host = (rawHost ?? "").trim();
+    if (!host) {
+        return DEFAULT_HOST;
+    }
+    if (!VALID_HOST.test(host)) {
+        streamDeck.logger.warn(`panelHost inválido, se usa ${DEFAULT_HOST}`);
+        return DEFAULT_HOST;
+    }
+    return host;
+}
 function buildClient(settings) {
     const port = Number.parseInt(settings.panelPort ?? "19080", 10) || 19080;
-    const host = (settings.panelHost ?? "").trim() || "127.0.0.1";
+    const host = resolveHost(settings.panelHost);
     const token = (settings.panelToken ?? "").trim() || undefined;
     return new MuxlyveClient(port, host, token);
 }
@@ -9406,7 +9426,7 @@ class BaseToggleDestinationAction extends SingletonAction {
     }
     normalizePlatform(value) {
         const normalized = (value ?? "").trim().toLowerCase();
-        if (["twitch", "youtube", "kick", "tiktok"].includes(normalized)) {
+        if (["twitch", "youtube", "kick", "tiktok", "starvios"].includes(normalized)) {
             return normalized;
         }
         return this.defaultPlatform;
@@ -9494,6 +9514,25 @@ let TikTokToggleDestinationAction = (() => {
             __runInitializers(_classThis, _classExtraInitializers);
         }
         defaultPlatform = "tiktok";
+    });
+    return _classThis;
+})();
+let StarviosToggleDestinationAction = (() => {
+    let _classDecorators = [action({ UUID: "com.blackraken.muxlyve.streamdeck.toggle.starvios" })];
+    let _classDescriptor;
+    let _classExtraInitializers = [];
+    let _classThis;
+    let _classSuper = BaseToggleDestinationAction;
+    (class extends _classSuper {
+        static { _classThis = this; }
+        static {
+            const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(_classSuper[Symbol.metadata] ?? null) : void 0;
+            __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
+            _classThis = _classDescriptor.value;
+            if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
+            __runInitializers(_classThis, _classExtraInitializers);
+        }
+        defaultPlatform = "starvios";
     });
     return _classThis;
 })();
@@ -9946,6 +9985,7 @@ streamDeck.actions.registerAction(new TwitchToggleDestinationAction());
 streamDeck.actions.registerAction(new YoutubeToggleDestinationAction());
 streamDeck.actions.registerAction(new KickToggleDestinationAction());
 streamDeck.actions.registerAction(new TikTokToggleDestinationAction());
+streamDeck.actions.registerAction(new StarviosToggleDestinationAction());
 streamDeck.actions.registerAction(new ToggleBufferAction());
 streamDeck.actions.registerAction(new SaveClipAction());
 streamDeck.actions.registerAction(new ToggleFullRecordAction());

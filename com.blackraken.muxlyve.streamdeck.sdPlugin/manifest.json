@@ -77,6 +77,18 @@
             ]
         },
         {
+            "Name": "Starvios",
+            "UUID": "com.blackraken.muxlyve.streamdeck.toggle.starvios",
+            "Icon": "imgs/actions/starvios/icon",
+            "Tooltip": "Toggle Starvios",
+            "PropertyInspectorPath": "ui/property-inspector.html",
+            "States": [
+                {
+                    "Image": "imgs/actions/starvios/off"
+                }
+            ]
+        },
+        {
             "Name": "Buffer",
             "UUID": "com.blackraken.muxlyve.streamdeck.toggle.buffer",
             "Icon": "imgs/actions/buffer/icon",

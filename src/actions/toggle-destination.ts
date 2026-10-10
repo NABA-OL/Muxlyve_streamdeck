@@ -171,7 +171,7 @@ abstract class BaseToggleDestinationAction extends SingletonAction<ToggleDestina
 
   private normalizePlatform(value?: string): string {
     const normalized = (value ?? "").trim().toLowerCase();
-    if (["twitch", "youtube", "kick", "tiktok"].includes(normalized)) {
+    if (["twitch", "youtube", "kick", "tiktok", "starvios"].includes(normalized)) {
       return normalized;
     }
     return this.defaultPlatform;
@@ -208,4 +208,9 @@ export class KickToggleDestinationAction extends BaseToggleDestinationAction {
 @action({ UUID: "com.blackraken.muxlyve.streamdeck.toggle.tiktok" })
 export class TikTokToggleDestinationAction extends BaseToggleDestinationAction {
   protected override readonly defaultPlatform = "tiktok";
+}
+
+@action({ UUID: "com.blackraken.muxlyve.streamdeck.toggle.starvios" })
+export class StarviosToggleDestinationAction extends BaseToggleDestinationAction {
+  protected override readonly defaultPlatform = "starvios";
 }

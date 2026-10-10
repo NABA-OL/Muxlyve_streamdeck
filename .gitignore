@@ -6,3 +6,6 @@ CLAUDE.md
 CONTEXT.md
 agents.md
 AI.md
+
+.DS_Store
+*.streamDeckPlugin

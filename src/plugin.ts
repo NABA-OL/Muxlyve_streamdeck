@@ -1,6 +1,7 @@
 import streamDeck from "@elgato/streamdeck";
 import {
   KickToggleDestinationAction,
+  StarviosToggleDestinationAction,
   TikTokToggleDestinationAction,
   TwitchToggleDestinationAction,
   YoutubeToggleDestinationAction,
@@ -13,6 +14,7 @@ streamDeck.actions.registerAction(new TwitchToggleDestinationAction());
 streamDeck.actions.registerAction(new YoutubeToggleDestinationAction());
 streamDeck.actions.registerAction(new KickToggleDestinationAction());
 streamDeck.actions.registerAction(new TikTokToggleDestinationAction());
+streamDeck.actions.registerAction(new StarviosToggleDestinationAction());
 streamDeck.actions.registerAction(new ToggleBufferAction());
 streamDeck.actions.registerAction(new SaveClipAction());
 streamDeck.actions.registerAction(new ToggleFullRecordAction());

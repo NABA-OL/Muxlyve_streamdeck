@@ -46,6 +46,7 @@
         <option value="youtube">YouTube</option>
         <option value="kick">Kick</option>
         <option value="tiktok">TikTok</option>
+        <option value="starvios">Starvios</option>
     </select>
 
     <label for="panelHost" id="lbl-host">Muxlyve Host</label>
@@ -86,7 +87,7 @@
         function platformFromActionUUID(actionUUID) {
             if (!actionUUID) return null;
             const platformId = actionUUID.split('.').pop();
-            return ['twitch', 'youtube', 'kick', 'tiktok'].includes(platformId) ? platformId : null;
+            return ['twitch', 'youtube', 'kick', 'tiktok', 'starvios'].includes(platformId) ? platformId : null;
         }
 
         function applySettingsToForm(settings) {

@@ -11,6 +11,9 @@ importers:
       '@elgato/streamdeck':
         specifier: ^2.1.0
         version: 2.1.0
+      '@elgato/utils':
+        specifier: ^0.6.1
+        version: 0.6.1
     devDependencies:
       '@elgato/cli':
         specifier: ^1.7.4
@@ -53,6 +56,9 @@ packages:
 
   '@elgato/utils@0.4.5':
     resolution: {integrity: sha512-kBoqM8LEhhVLv7lNftYqaecNna3T/L85QQWU56yR1iFCvqlyyD22WmBljRcQkw5ZNvib55Br3cnrsxX3ajp+dQ==}
+
+  '@elgato/utils@0.6.1':
+    resolution: {integrity: sha512-R3YZWdBlg1ffLny8EmAaZuh7qe+FahGHHwVzCUixnhZObuq4UPhv25ev+PxzgeJRwtpP6P/TVqOw7FFIYThllg==}
 
   '@emnapi/runtime@1.11.2':
     resolution: {integrity: sha512-kyOl3X0DuTiT1h2ft8r2fYO8JYtU9a9Xis/zBSiGArNaagCOWx90N1k2wxp18czFDH+OgcWGb5ZP/XMt3dcyPA==}
@@ -896,6 +902,10 @@ snapshots:
       - utf-8-validate
 
   '@elgato/utils@0.4.5':
+    dependencies:
+      zod: 3.25.76
+
+  '@elgato/utils@0.6.1':
     dependencies:
       zod: 3.25.76
 

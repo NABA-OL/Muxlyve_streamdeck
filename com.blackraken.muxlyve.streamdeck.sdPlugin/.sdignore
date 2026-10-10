@@ -1,0 +1,4 @@
+*.streamDeckPlugin
+.DS_Store
+*.map
+logs/

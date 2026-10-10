@@ -8,7 +8,8 @@
         "validate": "streamdeck validate"
     },
     "dependencies": {
-        "@elgato/streamdeck": "^2.1.0"
+        "@elgato/streamdeck": "^2.1.0",
+        "@elgato/utils": "^0.6.1"
     },
     "devDependencies": {
         "@elgato/cli": "^1.7.4",
